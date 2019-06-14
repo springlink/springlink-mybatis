@@ -121,7 +121,7 @@ public class DefaultSqlDao implements SqlDao {
 				applyNamespace(entityType, SqlDialect.UPDATE_ID),
 				getParameterObject(entityType, ctx -> {
 					ctx.putObject(SqlDialect.CRITERION_KEY, processCriterion(entityType, criterion));
-					ctx.putObject(SqlDialect.UPDATE_KEY, update);
+					ctx.putObject(SqlDialect.UPDATE_KEY, processUpdate(entityType, update));
 				}));
 	}
 
@@ -129,8 +129,8 @@ public class DefaultSqlDao implements SqlDao {
 		return session.selectOne(
 				applyNamespace(selector.getEntityType(), SqlDialect.SELECT_ENTITY_ID),
 				getParameterObject(selector.getEntityType(), ctx -> {
-					ctx.putObject(SqlDialect.CRITERION_KEY, selector.getCriterion());
-					ctx.putObject(SqlDialect.ORDER_BY_KEY, selector.getOrderBy());
+					ctx.putObject(SqlDialect.CRITERION_KEY, processCriterion(selector));
+					ctx.putObject(SqlDialect.ORDER_BY_KEY, processOrderBy(selector));
 					ctx.putObject(SqlDialect.FOR_UPDATE_KEY, selector.isForUpdate());
 				}));
 	}
@@ -140,8 +140,8 @@ public class DefaultSqlDao implements SqlDao {
 		return extractResult(session.selectOne(
 				applyNamespace(selector.getEntityType(), SqlDialect.SELECT_PROJECTIONS_ID),
 				getParameterObject(selector.getEntityType(), ctx -> {
-					ctx.putObject(SqlDialect.CRITERION_KEY, selector.getCriterion());
-					ctx.putObject(SqlDialect.ORDER_BY_KEY, selector.getOrderBy());
+					ctx.putObject(SqlDialect.CRITERION_KEY, processCriterion(selector));
+					ctx.putObject(SqlDialect.ORDER_BY_KEY, processOrderBy(selector));
 					ctx.putObject(SqlDialect.FOR_UPDATE_KEY, selector.isForUpdate());
 					ctx.putObject(SqlDialect.PROJECTIONS_KEY, projections);
 				})), projections);
@@ -151,8 +151,8 @@ public class DefaultSqlDao implements SqlDao {
 		return session.selectList(
 				applyNamespace(selector.getEntityType(), SqlDialect.SELECT_ENTITY_ID),
 				getParameterObject(selector.getEntityType(), ctx -> {
-					ctx.putObject(SqlDialect.CRITERION_KEY, selector.getCriterion());
-					ctx.putObject(SqlDialect.ORDER_BY_KEY, selector.getOrderBy());
+					ctx.putObject(SqlDialect.CRITERION_KEY, processCriterion(selector));
+					ctx.putObject(SqlDialect.ORDER_BY_KEY, processOrderBy(selector));
 					ctx.putObject(SqlDialect.FOR_UPDATE_KEY, selector.isForUpdate());
 					ctx.putObject(SqlDialect.ROW_BOUNDS_KEY, rowBounds);
 				}));
@@ -163,8 +163,8 @@ public class DefaultSqlDao implements SqlDao {
 		return extractResultList(session.selectList(
 				applyNamespace(selector.getEntityType(), SqlDialect.SELECT_PROJECTIONS_ID),
 				getParameterObject(selector.getEntityType(), ctx -> {
-					ctx.putObject(SqlDialect.CRITERION_KEY, selector.getCriterion());
-					ctx.putObject(SqlDialect.ORDER_BY_KEY, selector.getOrderBy());
+					ctx.putObject(SqlDialect.CRITERION_KEY, processCriterion(selector));
+					ctx.putObject(SqlDialect.ORDER_BY_KEY, processOrderBy(selector));
 					ctx.putObject(SqlDialect.FOR_UPDATE_KEY, selector.isForUpdate());
 					ctx.putObject(SqlDialect.ROW_BOUNDS_KEY, rowBounds);
 					ctx.putObject(SqlDialect.PROJECTIONS_KEY, projections);
@@ -175,7 +175,7 @@ public class DefaultSqlDao implements SqlDao {
 		return session.selectMap(
 				applyNamespace(selector.getEntityType(), SqlDialect.SELECT_ENTITY_ID),
 				getParameterObject(selector.getEntityType(), ctx -> {
-					ctx.putObject(SqlDialect.CRITERION_KEY, selector.getCriterion());
+					ctx.putObject(SqlDialect.CRITERION_KEY, processCriterion(selector));
 					ctx.putObject(SqlDialect.FOR_UPDATE_KEY, selector.isForUpdate());
 				}), mapKey);
 	}
@@ -199,9 +199,25 @@ public class DefaultSqlDao implements SqlDao {
 	protected List<Object> extractResultList(List<Map<String, Object>> resultList, SqlProjections projections) {
 		return resultList.stream().map(result -> extractResult(result, projections)).collect(Collectors.toList());
 	}
-	
+
 	protected SqlCriterion processCriterion(Class<?> entityType, SqlCriterion criterion) {
 		return criterion;
+	}
+
+	protected SqlOrderBy processOrderBy(Class<?> entityType, SqlOrderBy orderBy) {
+		return orderBy;
+	}
+
+	protected SqlUpdate processUpdate(Class<?> entityType, SqlUpdate update) {
+		return update;
+	}
+
+	private SqlCriterion processCriterion(Selector<?> selector) {
+		return processCriterion(selector.getEntityType(), selector.getCriterion());
+	}
+
+	private SqlOrderBy processOrderBy(Selector<?> selector) {
+		return processOrderBy(selector.getEntityType(), selector.getOrderBy());
 	}
 
 	private class SelectorImpl<T> implements Selector<T> {
