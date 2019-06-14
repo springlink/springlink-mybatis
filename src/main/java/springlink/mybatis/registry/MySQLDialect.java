@@ -218,13 +218,14 @@ public class MySQLDialect extends SqlDialect {
 	}
 
 	protected void buildSelectEntityStatement(SqlContext ctx, MapperBuilderAssistant assistant) {
-		LanguageDriver langDrv = assistant.getLanguageDriver(null);
+		Configuration config = assistant.getConfiguration();
+		LanguageDriver langDrv = config.getLanguageDriver(null);
 		String script = String.format("<script>SELECT %s FROM %s %s %s %s %s</script>",
 				getColumnsSql(ctx), getJoinedTableSql(ctx), getWhereSql(ctx), getOrderBySql(ctx),
 				getLimitSql(ctx), getForUpdateSql(ctx));
 		assistant.addMappedStatement(
 				SELECT_ENTITY_ID /* id */,
-				langDrv.createSqlSource(assistant.getConfiguration(), script, Map.class) /* sqlSource */,
+				langDrv.createSqlSource(config, script, Map.class) /* sqlSource */,
 				StatementType.PREPARED /* statementType */,
 				SqlCommandType.SELECT /* sqlCommandType */,
 				null /* fetchSize */,
@@ -245,13 +246,14 @@ public class MySQLDialect extends SqlDialect {
 	}
 
 	protected void buildSelectProjectionsStatement(SqlContext ctx, MapperBuilderAssistant assistant) {
-		LanguageDriver langDrv = assistant.getLanguageDriver(null);
+		Configuration config = assistant.getConfiguration();
+		LanguageDriver langDrv = config.getLanguageDriver(null);
 		String script = String.format("<script>SELECT %s FROM %s %s %s %s %s</script>",
 				getProjectionsSql(ctx), getJoinedTableSql(ctx), getWhereSql(ctx), getOrderBySql(ctx),
 				getLimitSql(ctx), getForUpdateSql(ctx));
 		assistant.addMappedStatement(
 				SELECT_PROJECTIONS_ID /* id */,
-				langDrv.createSqlSource(assistant.getConfiguration(), script, Map.class) /* sqlSource */,
+				langDrv.createSqlSource(config, script, Map.class) /* sqlSource */,
 				StatementType.PREPARED /* statementType */,
 				SqlCommandType.SELECT /* sqlCommandType */,
 				null /* fetchSize */,
@@ -272,12 +274,13 @@ public class MySQLDialect extends SqlDialect {
 	}
 
 	protected void buildSelectCountStatement(SqlContext ctx, MapperBuilderAssistant assistant) {
-		LanguageDriver langDrv = assistant.getLanguageDriver(null);
+		Configuration config = assistant.getConfiguration();
+		LanguageDriver langDrv = config.getLanguageDriver(null);
 		String script = String.format("<script>SELECT COUNT(*) FROM %s %s</script>",
 				getJoinedTableSql(ctx), getWhereSql(ctx));
 		assistant.addMappedStatement(
 				SELECT_COUNT_ID /* id */,
-				langDrv.createSqlSource(assistant.getConfiguration(), script, Map.class) /* sqlSource */,
+				langDrv.createSqlSource(config, script, Map.class) /* sqlSource */,
 				StatementType.PREPARED /* statementType */,
 				SqlCommandType.SELECT /* sqlCommandType */,
 				null /* fetchSize */,
@@ -298,12 +301,13 @@ public class MySQLDialect extends SqlDialect {
 	}
 
 	protected void buildSelectExistsStatement(SqlContext ctx, MapperBuilderAssistant assistant) {
-		LanguageDriver langDrv = assistant.getLanguageDriver(null);
+		Configuration config = assistant.getConfiguration();
+		LanguageDriver langDrv = config.getLanguageDriver(null);
 		String script = String.format("<script>SELECT EXISTS(SELECT 1 FROM %s %s)</script>",
 				getJoinedTableSql(ctx), getWhereSql(ctx));
 		assistant.addMappedStatement(
 				SELECT_EXISTS_ID /* id */,
-				langDrv.createSqlSource(assistant.getConfiguration(), script, Map.class) /* sqlSource */,
+				langDrv.createSqlSource(config, script, Map.class) /* sqlSource */,
 				StatementType.PREPARED /* statementType */,
 				SqlCommandType.SELECT /* sqlCommandType */,
 				null /* fetchSize */,
@@ -324,12 +328,13 @@ public class MySQLDialect extends SqlDialect {
 	}
 
 	protected void buildDeleteStatement(SqlContext ctx, MapperBuilderAssistant assistant) {
-		LanguageDriver langDrv = assistant.getLanguageDriver(null);
+		Configuration config = assistant.getConfiguration();
+		LanguageDriver langDrv = config.getLanguageDriver(null);
 		String script = String.format("<script>DELETE %s FROM %s %s</script>",
 				ctx.getTableAlias(), getJoinedTableSql(ctx), getWhereSql(ctx));
 		assistant.addMappedStatement(
 				DELETE_ID /* id */,
-				langDrv.createSqlSource(assistant.getConfiguration(), script, Map.class) /* sqlSource */,
+				langDrv.createSqlSource(config, script, Map.class) /* sqlSource */,
 				StatementType.PREPARED /* statementType */,
 				SqlCommandType.DELETE /* sqlCommandType */,
 				null /* fetchSize */,
@@ -350,12 +355,13 @@ public class MySQLDialect extends SqlDialect {
 	}
 
 	protected void buildUpdateStatement(SqlContext ctx, MapperBuilderAssistant assistant) {
-		LanguageDriver langDrv = assistant.getLanguageDriver(null);
+		Configuration config = assistant.getConfiguration();
+		LanguageDriver langDrv = config.getLanguageDriver(null);
 		String script = String.format("<script>UPDATE %s %s %s</script>",
 				getJoinedTableSql(ctx), getSetSql(ctx), getWhereSql(ctx));
 		assistant.addMappedStatement(
 				UPDATE_ID /* id */,
-				langDrv.createSqlSource(assistant.getConfiguration(), script, Map.class) /* sqlSource */,
+				langDrv.createSqlSource(config, script, Map.class) /* sqlSource */,
 				StatementType.PREPARED /* statementType */,
 				SqlCommandType.UPDATE /* sqlCommandType */,
 				null /* fetchSize */,
@@ -398,12 +404,13 @@ public class MySQLDialect extends SqlDialect {
 			}
 		}
 
-		LanguageDriver langDrv = assistant.getLanguageDriver(null);
+		Configuration config = assistant.getConfiguration();
+		LanguageDriver langDrv = config.getLanguageDriver(null);
 		String script = String.format("<script>INSERT INTO %s(%s) VALUES(%s)</script>",
 				getTableSql(ctx, null), String.join(",", columns), String.join(",", values));
 		assistant.addMappedStatement(
 				INSERT_ID /* id */,
-				langDrv.createSqlSource(assistant.getConfiguration(), script, Map.class) /* sqlSource */,
+				langDrv.createSqlSource(config, script, Map.class) /* sqlSource */,
 				StatementType.PREPARED /* statementType */,
 				SqlCommandType.INSERT /* sqlCommandType */,
 				null /* fetchSize */,

@@ -87,7 +87,7 @@ public class DefaultSqlDao implements SqlDao {
 		return session.delete(
 				applyNamespace(entityType, SqlDialect.DELETE_ID),
 				getParameterObject(entityType, ctx -> {
-					ctx.putObject(SqlDialect.CRITERION_KEY, criterion);
+					ctx.putObject(SqlDialect.CRITERION_KEY, processCriterion(entityType, criterion));
 				}));
 	}
 
@@ -97,7 +97,7 @@ public class DefaultSqlDao implements SqlDao {
 		return session.selectOne(
 				applyNamespace(entityType, SqlDialect.SELECT_COUNT_ID),
 				getParameterObject(entityType, ctx -> {
-					ctx.putObject(SqlDialect.CRITERION_KEY, criterion);
+					ctx.putObject(SqlDialect.CRITERION_KEY, processCriterion(entityType, criterion));
 				}));
 	}
 
@@ -107,7 +107,7 @@ public class DefaultSqlDao implements SqlDao {
 		return session.selectOne(
 				applyNamespace(entityType, SqlDialect.SELECT_EXISTS_ID),
 				getParameterObject(entityType, ctx -> {
-					ctx.putObject(SqlDialect.CRITERION_KEY, criterion);
+					ctx.putObject(SqlDialect.CRITERION_KEY, processCriterion(entityType, criterion));
 				}));
 	}
 
@@ -120,7 +120,7 @@ public class DefaultSqlDao implements SqlDao {
 		return session.update(
 				applyNamespace(entityType, SqlDialect.UPDATE_ID),
 				getParameterObject(entityType, ctx -> {
-					ctx.putObject(SqlDialect.CRITERION_KEY, criterion);
+					ctx.putObject(SqlDialect.CRITERION_KEY, processCriterion(entityType, criterion));
 					ctx.putObject(SqlDialect.UPDATE_KEY, update);
 				}));
 	}
@@ -198,6 +198,10 @@ public class DefaultSqlDao implements SqlDao {
 
 	protected List<Object> extractResultList(List<Map<String, Object>> resultList, SqlProjections projections) {
 		return resultList.stream().map(result -> extractResult(result, projections)).collect(Collectors.toList());
+	}
+	
+	protected SqlCriterion processCriterion(Class<?> entityType, SqlCriterion criterion) {
+		return criterion;
 	}
 
 	private class SelectorImpl<T> implements Selector<T> {
