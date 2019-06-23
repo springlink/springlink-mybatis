@@ -19,6 +19,7 @@ package springlink.mybatis.registry;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.IntFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -517,13 +518,18 @@ public class MySQLDialect extends SqlDialect {
 		case AND:
 			return IntStream.range(0, criteria.size())
 					.mapToObj(i -> getCriterionSql(ctx, path + ".criteria[" + i + "]", criteria.get(i)))
+                    .filter(sql -> !sql.isEmpty())
 					.collect(Collectors.collectingAndThen(Collectors.joining(" AND "), encloser));
 		case OR:
 			return IntStream.range(0, criteria.size())
 					.mapToObj(i -> getCriterionSql(ctx, path + ".criteria[" + i + "]", criteria.get(i)))
+                    .filter(sql -> !sql.isEmpty())
 					.collect(Collectors.collectingAndThen(Collectors.joining(" OR "), encloser));
 		case NOT:
-			return "NOT(" + getCriterionSql(ctx, path + ".criteria[0]", criteria.get(0)) + ")";
+            return Optional.of(getCriterionSql(ctx, path + ".criteria[0]", criteria.get(0)))
+                    .filter(sql -> !sql.isEmpty())
+                    .map(sql -> "NOT(" + sql + ")")
+                    .orElse("");
 		default:
 			throw new UnsupportedOperationException("Unknown junction type: " + junction.getType().name());
 		}
