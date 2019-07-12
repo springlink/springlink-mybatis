@@ -43,25 +43,21 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.wix.mysql.EmbeddedMysql;
-import com.wix.mysql.ScriptResolver;
-import com.wix.mysql.config.Charset;
-import com.wix.mysql.config.MysqldConfig;
-import com.wix.mysql.distribution.Version;
 
 import springlink.mybatis.entity.Author;
 import springlink.mybatis.entity.Author2;
@@ -80,27 +76,25 @@ import springlink.mybatis.sql.SqlUpdate;
 import springlink.mybatis.util.BoundList;
 
 public class DefaultSqlDaoTest {
-	private static EmbeddedMysql mysqld;
 	private static SqlSessionFactory sqlSessionFactory;
 	private static SqlRegistry sqlRegistry;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws IOException {
-		MysqldConfig config = MysqldConfig.aMysqldConfig(Version.v5_7_latest)
-				.withCharset(Charset.UTF8)
-				.withPort(13006)
-				.withUser("test", "")
-				.build();
-		mysqld = EmbeddedMysql.anEmbeddedMysql(config)
-				.addSchema("test", ScriptResolver.classPathScript("entity/blog-mysql.sql"))
-				.start();
-
-		try (Reader reader = Resources.getResourceAsReader("entity/mybatis-config-mysql.xml")) {
+		try (Reader reader = Resources.getResourceAsReader("entity/mybatis-config-h2.xml")) {
 			sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
 		}
 
+		try (Reader reader = Resources.getResourceAsReader("entity/blog-h2.sql");
+				SqlSession session = sqlSessionFactory.openSession()) {
+			ScriptRunner runner = new ScriptRunner(session.getConnection());
+			runner.setLogWriter(null);
+			runner.runScript(reader);
+			session.commit();
+		}
+
 		Configuration cfg = sqlSessionFactory.getConfiguration();
-		sqlRegistry = new SqlRegistry(cfg, SqlDialect.get("mysql"));
+		sqlRegistry = new SqlRegistry(cfg, SqlDialect.get("h2"));
 		sqlRegistry.addType(Comment.class);
 		sqlRegistry.addType(Author.class);
 		sqlRegistry.addType(Author2.class);
@@ -109,11 +103,6 @@ public class DefaultSqlDaoTest {
 		sqlRegistry.addType(Tag.class);
 		sqlRegistry.addType(Tag2.class);
 		sqlRegistry.addType(GeneratedKeysTable.class);
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() {
-		mysqld.stop();
 	}
 
 	@Test
@@ -383,8 +372,9 @@ public class DefaultSqlDaoTest {
 			SqlDao dao = new DefaultSqlDao(sqlRegistry, session);
 
 			assertThat(
-					dao.select(Post.class).where(eq("id", 2)).<Integer>asOne(SqlProjections.create().property("aid", "authorId")).orElse(null))
-							.isEqualTo(101);
+					dao.select(Post.class).where(eq("id", 2)).<Integer>asOne(SqlProjections.create().property("aid", "authorId"))
+							.orElse(null))
+									.isEqualTo(101);
 
 			assertThat(dao.select(Post.class).<String>asList(SqlProjections.create().distinct("s", "section")))
 					.containsExactlyInAnyOrder("NEWS", "VIDEOS", "PODCASTS", "IMAGES");
@@ -392,8 +382,9 @@ public class DefaultSqlDaoTest {
 			assertThat(dao.select(Post.class).<Long>asOne(SqlProjections.create().count("aid", "authorId")).orElse(null))
 					.isEqualTo(5);
 
-			assertThat(dao.select(Post.class).<Long>asOne(SqlProjections.create().countDistinct("aid", "authorId")).orElse(null))
-					.isEqualTo(2);
+			assertThat(
+					dao.select(Post.class).<Long>asOne(SqlProjections.create().countDistinct("aid", "authorId")).orElse(null))
+							.isEqualTo(2);
 
 			assertThat(dao.select(Post.class).<Number>asOne(SqlProjections.create().max("s", "star")).orElse(null).intValue())
 					.isEqualTo(100);
@@ -412,8 +403,9 @@ public class DefaultSqlDaoTest {
 					.<String>asOne(SqlProjections.create().property("an", "authorName")).orElse(null))
 							.isEqualTo("jim");
 
-			assertThat(dao.select(Post.class).<Long>asOne(SqlProjections.create().count("ban", "blogAuthorName")).orElse(null))
-					.isEqualTo(4);
+			assertThat(
+					dao.select(Post.class).<Long>asOne(SqlProjections.create().count("ban", "blogAuthorName")).orElse(null))
+							.isEqualTo(4);
 
 			assertThat(dao.select(Post.class).<String>asList(SqlProjections.create().distinct("an", "authorName")))
 					.containsExactlyInAnyOrder("jim", "sally");
@@ -427,7 +419,8 @@ public class DefaultSqlDaoTest {
 
 			assertThat(dao.select(Post.class).where(eq("id", 2)).<Map<String, Integer>>asOne(SqlProjections.create()
 					.property("bid", "blogId")
-					.property("aid", "authorId")).orElse(null))
+					.property("aid", "authorId")).orElse(null)
+					.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().toLowerCase(), e -> e.getValue())))
 							.isEqualTo(ImmutableMap.of("bid", 1, "aid", 101));
 
 			BoundList<Integer> bl1 = dao.select(Post.class).orderBy(SqlOrderBy.create().asc("id"))
@@ -442,34 +435,42 @@ public class DefaultSqlDaoTest {
 			assertThat(bl1.total()).isEqualTo(5);
 			assertThat(bl1.offset()).isEqualTo(1);
 			assertThat(bl1.limit()).isEqualTo(2);
-			assertThat(bl2.get(0))
-					.containsEntry("id", 2)
-					.containsEntry("aid", 101);
-			assertThat(bl2.get(1))
-					.containsEntry("id", 3)
-					.containsEntry("aid", 102);
+			assertThat(
+					bl2.get(0).entrySet().stream().collect(Collectors.toMap(e -> e.getKey().toLowerCase(), e -> e.getValue())))
+							.containsEntry("id", 2)
+							.containsEntry("aid", 101);
+			assertThat(
+					bl2.get(1).entrySet().stream().collect(Collectors.toMap(e -> e.getKey().toLowerCase(), e -> e.getValue())))
+							.containsEntry("id", 3)
+							.containsEntry("aid", 102);
 
 			assertThat(dao.select(Post.class).asList(SqlProjections.create().property("id", "id")))
 					.containsExactlyInAnyOrder(1, 2, 3, 4, 5);
 
 			assertThat(dao.select(Post.class)
-					.<Map<String, Integer>>asList(SqlProjections.create().property("id", "id").property("aid", "authorId")))
-							.containsExactlyInAnyOrder(
-									ImmutableMap.of("id", 1, "aid", 101),
-									ImmutableMap.of("id", 2, "aid", 101),
-									ImmutableMap.of("id", 3, "aid", 102),
-									ImmutableMap.of("id", 4, "aid", 102),
-									ImmutableMap.of("id", 5, "aid", 101));
+					.<Map<String, Integer>>asList(SqlProjections.create().property("id", "id").property("aid", "authorId"))
+					.stream()
+					.map(item -> item.entrySet().stream()
+							.collect(Collectors.toMap(e -> e.getKey().toLowerCase(), e -> e.getValue()))))
+									.containsExactlyInAnyOrder(
+											ImmutableMap.of("id", 1, "aid", 101),
+											ImmutableMap.of("id", 2, "aid", 101),
+											ImmutableMap.of("id", 3, "aid", 102),
+											ImmutableMap.of("id", 4, "aid", 102),
+											ImmutableMap.of("id", 5, "aid", 101));
 
 			assertThat(dao.select(Post.class).asList(new RowBounds(1, 2),
 					SqlProjections.create().property("id", "id")))
 							.containsExactlyInAnyOrder(2, 3);
 
-			assertThat(dao.select(Post.class).asList(new RowBounds(1, 2),
-					SqlProjections.create().property("id", "id").property("aid", "authorId")))
-							.containsExactlyInAnyOrder(
-									ImmutableMap.of("id", 2, "aid", 101),
-									ImmutableMap.of("id", 3, "aid", 102));
+			assertThat(dao.select(Post.class).<Map<String, Object>>asList(new RowBounds(1, 2),
+					SqlProjections.create().property("id", "id").property("aid", "authorId"))
+					.stream()
+					.map(item -> item.entrySet().stream()
+							.collect(Collectors.toMap(e -> e.getKey().toLowerCase(), e -> e.getValue()))))
+									.containsExactlyInAnyOrder(
+											ImmutableMap.of("id", 2, "aid", 101),
+											ImmutableMap.of("id", 3, "aid", 102));
 		}
 	}
 
@@ -617,7 +618,7 @@ public class DefaultSqlDaoTest {
 			session.rollback();
 		}
 	}
-	
+
 	@Test
 	public void testSelectPerformance() {
 		SqlSession session = Mockito.mock(SqlSession.class);

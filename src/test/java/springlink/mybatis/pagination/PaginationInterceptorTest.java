@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
@@ -39,47 +40,33 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.wix.mysql.EmbeddedMysql;
-import com.wix.mysql.ScriptResolver;
-import com.wix.mysql.config.Charset;
-import com.wix.mysql.config.MysqldConfig;
-import com.wix.mysql.distribution.Version;
 
 import springlink.mybatis.entity.Post;
 import springlink.mybatis.util.BoundList;
 
 public class PaginationInterceptorTest {
-	private static EmbeddedMysql mysqld;
 	private static SqlSessionFactory sqlSessionFactory;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws IOException {
-		MysqldConfig config = MysqldConfig.aMysqldConfig(Version.v5_7_latest)
-				.withCharset(Charset.UTF8)
-				.withPort(13006)
-				.withUser("test", "")
-				.build();
-		mysqld = EmbeddedMysql.anEmbeddedMysql(config)
-				.addSchema("test", ScriptResolver.classPathScript("entity/blog-mysql.sql"))
-				.start();
-
-		try (Reader reader = Resources.getResourceAsReader("entity/mybatis-config-mysql.xml")) {
+		try (Reader reader = Resources.getResourceAsReader("entity/mybatis-config-h2.xml")) {
 			sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
+		}
+
+		try (Reader reader = Resources.getResourceAsReader("entity/blog-h2.sql");
+				SqlSession session = sqlSessionFactory.openSession()) {
+			ScriptRunner runner = new ScriptRunner(session.getConnection());
+			runner.setLogWriter(null);
+			runner.runScript(reader);
+			session.commit();
 		}
 
 		Configuration cfg = sqlSessionFactory.getConfiguration();
 		cfg.addInterceptor(new TestInterceptor());
 		cfg.addInterceptor(new PaginationInterceptor());
 		cfg.addInterceptor(new TestInterceptor());
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() {
-		mysqld.stop();
 	}
 
 	@Test
@@ -104,8 +91,8 @@ public class PaginationInterceptorTest {
 			assertThat(posts.limit()).isEqualTo(3);
 			assertThat(posts).hasSize(1);
 			assertThat(posts).extracting(Post::getId).containsExactly(4);
-			
-			List<Post> plainPosts =  session.<Post>selectList(
+
+			List<Post> plainPosts = session.<Post>selectList(
 					"springlink.mybatis.selectPosts", Collections.singletonMap("blogIds", Arrays.asList(1, 2)),
 					new RowBounds(3, 3));
 			assertThat(plainPosts).hasSize(1);

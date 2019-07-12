@@ -44,8 +44,7 @@ public class CustomMapperTest {
 		try (Reader reader = Resources.getResourceAsReader("entity/mybatis-config-h2.xml")) {
 			sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
 		}
-		runScript(sqlSessionFactory, "entity/blog-h2-schema.sql");
-		runScript(sqlSessionFactory, "entity/blog-h2-data.sql");
+		runScript(sqlSessionFactory, "entity/blog-h2.sql");
 
 		Configuration cfg = sqlSessionFactory.getConfiguration();
 		cfg.addMapper(CustomMapper.class);

@@ -57,6 +57,7 @@ public abstract class SqlDialect {
 
 	static {
 		add("mysql", new MySQLDialect());
+		add("h2", new H2Dialect());
 		setDefault("mysql");
 	}
 
