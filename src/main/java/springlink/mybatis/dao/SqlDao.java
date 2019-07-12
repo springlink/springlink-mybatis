@@ -18,6 +18,7 @@ package springlink.mybatis.dao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.ibatis.reflection.MetaObject;
@@ -335,9 +336,9 @@ public interface SqlDao {
 
 		/**
 		 * Execute a select operation with one row expected.
-		 * @return entity object
+		 * @return optional entity object
 		 */
-		T asOne();
+		Optional<T> asOne();
 
 		/**
 		 * Execute a select operation with one row expected.
@@ -345,7 +346,7 @@ public interface SqlDao {
 		 * @param projections projections
 		 * @return a map, or a single value for single projection
 		 */
-		<R> R asOne(SqlProjections projections);
+		<R> Optional<R> asOne(SqlProjections projections);
 
 		/**
 		 * Execute a select operation with one row expected.
@@ -353,7 +354,7 @@ public interface SqlDao {
 		 * @param supplier projections supplier
 		 * @return a map, or a single value for a single projection
 		 */
-		default <R> R asOne(Function<SqlProjections.Lambda<T>, ? extends SqlProjections> supplier) {
+		default <R> Optional<R> asOne(Function<SqlProjections.Lambda<T>, ? extends SqlProjections> supplier) {
 			return asOne(supplier.apply(SqlProjections.create(getEntityType())));
 		}
 

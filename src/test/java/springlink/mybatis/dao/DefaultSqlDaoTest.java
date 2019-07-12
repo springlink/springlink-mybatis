@@ -187,7 +187,7 @@ public class DefaultSqlDaoTest {
 			assertThat(dao.update(Post.class, SqlUpdate.create().set("authorId", 11).set("body", "text body"), eq("id", 1)))
 					.isEqualTo(1);
 
-			Post post = dao.select(Post.class).where(eq("id", 1)).asOne();
+			Post post = dao.select(Post.class).where(eq("id", 1)).asOne().orElse(null);
 			assertThat(post.getSection()).isEqualTo("NEW_SECTION");
 			assertThat(post.getStar()).isEqualTo(6);
 			assertThat(post.getBlogId()).isNull();
@@ -223,7 +223,7 @@ public class DefaultSqlDaoTest {
 			assertThat(dao.update(Post.class, SqlUpdate.create().set("authorId", 33), eq("id", 1)))
 					.isEqualTo(1);
 
-			Post post = dao.select(Post.class).where(eq("id", 1)).asOne();
+			Post post = dao.select(Post.class).where(eq("id", 1)).asOne().orElse(null);
 			assertThat(post.getSection()).isEqualTo("NEW_SECTION");
 			assertThat(post.getStar()).isEqualTo(6);
 			assertThat(post.getBlogId()).isNull();
@@ -244,7 +244,7 @@ public class DefaultSqlDaoTest {
 			assertThat(dao.updateEntity(Post.class, emptyPostValue, false, eq("id", 1)))
 					.isEqualTo(1);
 
-			post = dao.select(Post.class).where(eq("id", 1)).asOne();
+			post = dao.select(Post.class).where(eq("id", 1)).asOne().orElse(null);
 			assertThat(post.getId()).isEqualTo(1);
 			assertThat(post.getAuthorId()).isEqualTo(11);
 			assertThat(post.getBlogId()).isNull();
@@ -269,7 +269,7 @@ public class DefaultSqlDaoTest {
 			assertThat(dao.update(Post.class, SqlUpdate.create().set("#CreateDate", date), eq("id", 1)))
 					.isEqualTo(1);
 
-			Post post = dao.select(Post.class).where(eq("id", 1)).asOne();
+			Post post = dao.select(Post.class).where(eq("id", 1)).asOne().orElse(null);
 			assertThat(post.getCreateTime()).isEqualTo(date);
 
 			session.rollback();
@@ -327,7 +327,7 @@ public class DefaultSqlDaoTest {
 
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-			Post post = dao.select(Post.class).where(eq("#id", 2)).asOne();
+			Post post = dao.select(Post.class).where(eq("#id", 2)).asOne().orElse(null);
 			assertThat(post.getAuthorId()).isEqualTo(101);
 			assertThat(post.getAuthorName()).isEqualTo("jim");
 			assertThat(post.getBlogAuthorName()).isEqualTo("jim");
@@ -383,36 +383,36 @@ public class DefaultSqlDaoTest {
 			SqlDao dao = new DefaultSqlDao(sqlRegistry, session);
 
 			assertThat(
-					dao.select(Post.class).where(eq("id", 2)).<Integer>asOne(SqlProjections.create().property("aid", "authorId")))
+					dao.select(Post.class).where(eq("id", 2)).<Integer>asOne(SqlProjections.create().property("aid", "authorId")).orElse(null))
 							.isEqualTo(101);
 
 			assertThat(dao.select(Post.class).<String>asList(SqlProjections.create().distinct("s", "section")))
 					.containsExactlyInAnyOrder("NEWS", "VIDEOS", "PODCASTS", "IMAGES");
 
-			assertThat(dao.select(Post.class).<Long>asOne(SqlProjections.create().count("aid", "authorId")))
+			assertThat(dao.select(Post.class).<Long>asOne(SqlProjections.create().count("aid", "authorId")).orElse(null))
 					.isEqualTo(5);
 
-			assertThat(dao.select(Post.class).<Long>asOne(SqlProjections.create().countDistinct("aid", "authorId")))
+			assertThat(dao.select(Post.class).<Long>asOne(SqlProjections.create().countDistinct("aid", "authorId")).orElse(null))
 					.isEqualTo(2);
 
-			assertThat(dao.select(Post.class).<Number>asOne(SqlProjections.create().max("s", "star")).intValue())
+			assertThat(dao.select(Post.class).<Number>asOne(SqlProjections.create().max("s", "star")).orElse(null).intValue())
 					.isEqualTo(100);
 
-			assertThat(dao.select(Post.class).<Number>asOne(SqlProjections.create().min("s", "star")).intValue())
+			assertThat(dao.select(Post.class).<Number>asOne(SqlProjections.create().min("s", "star")).orElse(null).intValue())
 					.isEqualTo(0);
 
-			assertThat(dao.select(Post.class).<Number>asOne(SqlProjections.create().sum("s", "star")).intValue())
+			assertThat(dao.select(Post.class).<Number>asOne(SqlProjections.create().sum("s", "star")).orElse(null).intValue())
 					.isEqualTo(183);
 
-			assertThat(dao.select(Post.class).<Number>asOne(SqlProjections.create().avg("s", "star")).intValue())
+			assertThat(dao.select(Post.class).<Number>asOne(SqlProjections.create().avg("s", "star")).orElse(null).intValue())
 					.isEqualTo(183 / 5);
 
 			// Join column
 			assertThat(dao.select(Post.class).where(eq("#id", 2))
-					.<String>asOne(SqlProjections.create().property("an", "authorName")))
+					.<String>asOne(SqlProjections.create().property("an", "authorName")).orElse(null))
 							.isEqualTo("jim");
 
-			assertThat(dao.select(Post.class).<Long>asOne(SqlProjections.create().count("ban", "blogAuthorName")))
+			assertThat(dao.select(Post.class).<Long>asOne(SqlProjections.create().count("ban", "blogAuthorName")).orElse(null))
 					.isEqualTo(4);
 
 			assertThat(dao.select(Post.class).<String>asList(SqlProjections.create().distinct("an", "authorName")))
@@ -427,7 +427,7 @@ public class DefaultSqlDaoTest {
 
 			assertThat(dao.select(Post.class).where(eq("id", 2)).<Map<String, Integer>>asOne(SqlProjections.create()
 					.property("bid", "blogId")
-					.property("aid", "authorId")))
+					.property("aid", "authorId")).orElse(null))
 							.isEqualTo(ImmutableMap.of("bid", 1, "aid", 101));
 
 			BoundList<Integer> bl1 = dao.select(Post.class).orderBy(SqlOrderBy.create().asc("id"))
@@ -547,7 +547,7 @@ public class DefaultSqlDaoTest {
 		try (SqlSession session = sqlSessionFactory.openSession()) {
 			SqlDao dao = new DefaultSqlDao(sqlRegistry, session);
 
-			assertThat(dao.select(Tag.class).where(eq("id", 1)).asOne().getName()).isEqualTo("funny");
+			assertThat(dao.select(Tag.class).where(eq("id", 1)).asOne().orElse(null).getName()).isEqualTo("funny");
 		}
 	}
 
@@ -556,8 +556,8 @@ public class DefaultSqlDaoTest {
 		try (SqlSession session = sqlSessionFactory.openSession()) {
 			SqlDao dao = new DefaultSqlDao(sqlRegistry, session);
 
-			assertThat(dao.select(Author2.class).where(eq("id", 101)).asOne().getUsername()).isEqualTo("jim");
-			assertThat(dao.select(Author3.class).where(eq("id", 101)).asOne().getUsername()).isEqualTo("jim");
+			assertThat(dao.select(Author2.class).where(eq("id", 101)).asOne().orElse(null).getUsername()).isEqualTo("jim");
+			assertThat(dao.select(Author3.class).where(eq("id", 101)).asOne().orElse(null).getUsername()).isEqualTo("jim");
 		}
 	}
 
@@ -576,8 +576,8 @@ public class DefaultSqlDaoTest {
 		try (SqlSession session = sqlSessionFactory.openSession()) {
 			SqlDao dao = new DefaultSqlDao(sqlRegistry, session);
 
-			assertThat(dao.select(Comment.class).where(eq("id", 1)).asOne().getPostId()).isEqualTo(1);
-			assertThat(dao.select(Tag2.class).where(eq("id", 1)).asOne().getNaMe()).isEqualTo("funny");
+			assertThat(dao.select(Comment.class).where(eq("id", 1)).asOne().orElse(null).getPostId()).isEqualTo(1);
+			assertThat(dao.select(Tag2.class).where(eq("id", 1)).asOne().orElse(null).getNaMe()).isEqualTo("funny");
 		}
 	}
 
@@ -593,7 +593,7 @@ public class DefaultSqlDaoTest {
 
 			assertThat(dao.select(Comment.class)
 					.where(SqlCriterion.lambda(Comment.class, t -> t.eq(Comment::getId, 1)))
-					.asOne().getPostId()).isEqualTo(1);
+					.asOne().orElse(null).getPostId()).isEqualTo(1);
 
 			assertThat(dao.count(Post.class,
 					SqlCriterion.lambda(Post.class, t -> t.eq(Post::getSection, "NEWS")))).isEqualTo(1);

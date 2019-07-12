@@ -18,6 +18,7 @@ package springlink.mybatis.dao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -279,14 +280,14 @@ public class DefaultSqlDao implements SqlDao {
 		}
 
 		@Override
-		public T asOne() {
-			return selectOne(this);
+		public Optional<T> asOne() {
+			return Optional.ofNullable(selectOne(this));
 		}
 
 		@Override
 		@SuppressWarnings("unchecked")
-		public <R> R asOne(SqlProjections projections) {
-			return (R) selectOne(this, projections);
+		public <R> Optional<R> asOne(SqlProjections projections) {
+			return Optional.ofNullable(selectOne(this, projections)).map(value -> (R) value);
 		}
 
 		@Override
