@@ -402,6 +402,10 @@ public class DefaultSqlDaoTest {
 			assertThat(dao.select(Post.class).where(eq("#id", 2))
 					.<String>asOne(SqlProjections.create().property("an", "authorName")).orElse(null))
 							.isEqualTo("jim");
+			
+			assertThat(dao.select(Post.class).where(eq("#id", 2))
+					.<String>asOne(SqlProjections.create().property("authorOfBlog.username")).orElse(null))
+							.isEqualTo("jim");
 
 			assertThat(
 					dao.select(Post.class).<Long>asOne(SqlProjections.create().count("ban", "blogAuthorName")).orElse(null))
