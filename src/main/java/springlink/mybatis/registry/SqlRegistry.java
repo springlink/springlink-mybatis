@@ -27,7 +27,7 @@ import com.google.common.reflect.ClassPath;
 import springlink.mybatis.annotation.SqlEntity;
 import springlink.mybatis.metadata.SqlJoinMetadata;
 import springlink.mybatis.metadata.SqlMetadata;
-import springlink.mybatis.util.Arguments;
+import springlink.mybatis.util.Asserts;
 
 public class SqlRegistry {
 	private static final String TABLE_ALIAS = "t";
@@ -37,15 +37,15 @@ public class SqlRegistry {
 	private final SqlDialect dialect;
 
 	public SqlRegistry(Configuration configuration, SqlDialect dialect) {
-		Arguments.notNull(configuration, "configuration");
-		Arguments.notNull(dialect, "dialect");
+		Asserts.notNull(configuration, "configuration");
+		Asserts.notNull(dialect, "dialect");
 		this.configuration = configuration;
 		this.dialect = dialect;
 	}
 
 	public void addPackage(String packageName, ClassLoader classLoader) throws IOException, ClassNotFoundException {
-		Arguments.notEmpty(packageName, "packageName");
-		Arguments.notNull(classLoader, "classLoader");
+		Asserts.notEmpty(packageName, "packageName");
+		Asserts.notNull(classLoader, "classLoader");
 		ClassPath classPath = ClassPath.from(classLoader);
 		for (ClassPath.ClassInfo classInfo : classPath.getTopLevelClassesRecursive(packageName)) {
 			Class<?> cls = classLoader.loadClass(classInfo.getName());
@@ -56,7 +56,7 @@ public class SqlRegistry {
 	}
 
 	public void addType(Class<?> entityType) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		String namespace = entityType.getName();
 		String resource = "SqlRegistry[" + namespace + "]";
 		MapperBuilderAssistant assistant = new MapperBuilderAssistant(configuration, resource);
@@ -67,12 +67,12 @@ public class SqlRegistry {
 	}
 
 	public SqlContext getContext(Class<?> entityType) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		return getContext(entityType, SqlContext.DEFAULT_PATH);
 	}
 
 	public SqlContext getContext(Class<?> entityType, String rootPath) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		SqlContext ctx = getContext(rootPath);
 		ctx.putEntity(entityType, TABLE_ALIAS);
 		int joinIndex = 0;

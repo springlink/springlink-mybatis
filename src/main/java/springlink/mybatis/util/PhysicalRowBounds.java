@@ -16,12 +16,13 @@
 
 package springlink.mybatis.util;
 
-import java.util.List;
+import org.apache.ibatis.session.RowBounds;
 
-public interface BoundList<E> extends List<E> {
-	int offset();
+public class PhysicalRowBounds extends RowBounds {
+	public PhysicalRowBounds() {
+	}
 
-	int limit();
-
-	int total();
+	public PhysicalRowBounds(int offset, int limit) {
+		super(offset, limit);
+	}
 }

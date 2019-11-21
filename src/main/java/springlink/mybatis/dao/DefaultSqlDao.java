@@ -34,8 +34,8 @@ import springlink.mybatis.sql.SqlCriterion;
 import springlink.mybatis.sql.SqlOrderBy;
 import springlink.mybatis.sql.SqlProjections;
 import springlink.mybatis.sql.SqlUpdate;
-import springlink.mybatis.util.Arguments;
 import springlink.mybatis.util.ArrayBoundList;
+import springlink.mybatis.util.Asserts;
 import springlink.mybatis.util.BoundList;
 
 public class DefaultSqlDao implements SqlDao {
@@ -47,8 +47,8 @@ public class DefaultSqlDao implements SqlDao {
 	}
 
 	public DefaultSqlDao(SqlRegistry registry, SqlSession session) {
-		Arguments.notNull(registry, "registry");
-		Arguments.notNull(session, "session");
+		Asserts.notNull(registry, "registry");
+		Asserts.notNull(session, "session");
 		this.registry = registry;
 		this.session = session;
 	}
@@ -65,13 +65,13 @@ public class DefaultSqlDao implements SqlDao {
 
 	@Override
 	public <T> Selector<T> select(Class<T> entityType) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		return new SelectorImpl<>(entityType);
 	}
 
 	@Override
 	public <T> int insert(Class<T> entityType, T value) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		if (value == null) {
 			return 0;
 		}
@@ -84,7 +84,7 @@ public class DefaultSqlDao implements SqlDao {
 
 	@Override
 	public int delete(Class<?> entityType, SqlCriterion criterion) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		return session.delete(
 				applyNamespace(entityType, SqlDialect.DELETE_ID),
 				getParameterObject(entityType, ctx -> {
@@ -94,7 +94,7 @@ public class DefaultSqlDao implements SqlDao {
 
 	@Override
 	public long count(Class<?> entityType, SqlCriterion criterion) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		return session.selectOne(
 				applyNamespace(entityType, SqlDialect.SELECT_COUNT_ID),
 				getParameterObject(entityType, ctx -> {
@@ -104,7 +104,7 @@ public class DefaultSqlDao implements SqlDao {
 
 	@Override
 	public boolean exists(Class<?> entityType, SqlCriterion criterion) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		return session.selectOne(
 				applyNamespace(entityType, SqlDialect.SELECT_EXISTS_ID),
 				getParameterObject(entityType, ctx -> {
@@ -114,7 +114,7 @@ public class DefaultSqlDao implements SqlDao {
 
 	@Override
 	public <T> int update(Class<T> entityType, SqlUpdate update, SqlCriterion criterion) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		if (update == null || update.asList().isEmpty()) {
 			return 0;
 		}
@@ -137,7 +137,7 @@ public class DefaultSqlDao implements SqlDao {
 	}
 
 	protected Object selectOne(Selector<?> selector, SqlProjections projections) {
-		Arguments.notNull(projections, "projections");
+		Asserts.notNull(projections, "projections");
 		return extractResult(session.selectOne(
 				applyNamespace(selector.getEntityType(), SqlDialect.SELECT_PROJECTIONS_ID),
 				getParameterObject(selector.getEntityType(), ctx -> {
@@ -160,7 +160,7 @@ public class DefaultSqlDao implements SqlDao {
 	}
 
 	protected List<Object> selectList(Selector<?> selector, RowBounds rowBounds, SqlProjections projections) {
-		Arguments.notNull(projections, "projections");
+		Asserts.notNull(projections, "projections");
 		return extractResultList(session.selectList(
 				applyNamespace(selector.getEntityType(), SqlDialect.SELECT_PROJECTIONS_ID),
 				getParameterObject(selector.getEntityType(), ctx -> {

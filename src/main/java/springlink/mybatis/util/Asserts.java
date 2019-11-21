@@ -16,12 +16,21 @@
 
 package springlink.mybatis.util;
 
-import java.util.List;
+public final class Asserts {
+	private Asserts() {
+	}
 
-public interface BoundList<E> extends List<E> {
-	int offset();
+	public static <T> T notNull(T obj, String name) {
+		if (obj == null) {
+			throw new IllegalArgumentException("Argument [" + name + "] cannot be null");
+		}
+		return obj;
+	}
 
-	int limit();
-
-	int total();
+	public static <T extends CharSequence> T notEmpty(T text, String name) {
+		if (text == null || text.length() == 0) {
+			throw new IllegalArgumentException("Argument [" + name + "] cannot be null or empty");
+		}
+		return text;
+	}
 }

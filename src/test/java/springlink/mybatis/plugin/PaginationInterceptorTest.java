@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package springlink.mybatis.pagination;
+package springlink.mybatis.plugin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,7 +44,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import springlink.mybatis.entity.Post;
+import springlink.mybatis.plugin.PaginationInterceptor;
 import springlink.mybatis.util.BoundList;
+import springlink.mybatis.util.PhysicalRowBounds;
 
 public class PaginationInterceptorTest {
 	private static SqlSessionFactory sqlSessionFactory;
@@ -76,7 +78,7 @@ public class PaginationInterceptorTest {
 
 			posts = (BoundList<Post>) session.<Post>selectList(
 					"springlink.mybatis.selectPosts", Collections.singletonMap("blogIds", Arrays.asList(1, 2)),
-					new PaginationRowBounds(0, 3));
+					new PhysicalRowBounds(0, 3));
 			assertThat(posts.total()).isEqualTo(4);
 			assertThat(posts.offset()).isEqualTo(0);
 			assertThat(posts.limit()).isEqualTo(3);
@@ -85,7 +87,7 @@ public class PaginationInterceptorTest {
 
 			posts = (BoundList<Post>) session.<Post>selectList(
 					"springlink.mybatis.selectPosts", Collections.singletonMap("blogIds", Arrays.asList(1, 2)),
-					new PaginationRowBounds(3, 3));
+					new PhysicalRowBounds(3, 3));
 			assertThat(posts.total()).isEqualTo(4);
 			assertThat(posts.offset()).isEqualTo(3);
 			assertThat(posts.limit()).isEqualTo(3);

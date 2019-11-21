@@ -25,7 +25,7 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.UnknownTypeHandler;
 
-import springlink.mybatis.util.Arguments;
+import springlink.mybatis.util.Asserts;
 
 public class SqlPropertyMetadata {
 	private final String name;
@@ -92,7 +92,7 @@ public class SqlPropertyMetadata {
 	}
 
 	public String getParameterSql(String path) {
-		Arguments.notEmpty(path, "path");
+		Asserts.notEmpty(path, "path");
 		StringBuilder sb = new StringBuilder();
 		sb.append("#{").append(path);
 		if (jdbcType != null && jdbcType != JdbcType.UNDEFINED) {

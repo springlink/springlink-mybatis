@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
-import springlink.mybatis.util.Arguments;
+import springlink.mybatis.util.Asserts;
 import springlink.mybatis.util.GetterResolver;
 
 public class SqlProjections {
@@ -157,8 +157,8 @@ public class SqlProjections {
 		private final String property;
 
 		private Projection(ProjectionType type, String property) {
-			Arguments.notNull(type, "type");
-			Arguments.notEmpty(property, "property");
+			Asserts.notNull(type, "type");
+			Asserts.notEmpty(property, "property");
 			this.type = type;
 			this.property = property;
 		}

@@ -20,7 +20,7 @@ import java.util.Objects;
 
 import com.google.common.base.Strings;
 
-import springlink.mybatis.util.Arguments;
+import springlink.mybatis.util.Asserts;
 
 public class SqlReference {
 	private final String name;
@@ -69,7 +69,7 @@ public class SqlReference {
 	}
 
 	public static SqlReference of(String property) {
-		Arguments.notEmpty(property, "property");
+		Asserts.notEmpty(property, "property");
 		int split = property.indexOf('.');
 		if (split < 0) {
 			return new SqlReference(null, property);

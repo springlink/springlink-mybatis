@@ -35,7 +35,7 @@ public final class GetterResolver<T> {
 
 	@SuppressWarnings("unchecked")
 	public static <T> GetterResolver<T> ofType(Class<T> type) {
-		Arguments.notNull(type, "type");
+		Asserts.notNull(type, "type");
 		return (GetterResolver<T>) mockObjectCache.computeIfAbsent(type, t -> {
 			ProxyFactory factory = new ProxyFactory();
 			factory.setSuperclass(type);
@@ -58,7 +58,7 @@ public final class GetterResolver<T> {
 	}
 
 	public String getPropertyName(Function<T, ?> getter) {
-		Arguments.notNull(getter, "getter");
+		Asserts.notNull(getter, "getter");
 		try {
 			getter.apply(mockObject);
 		} catch (PropertyNameException fnr) {

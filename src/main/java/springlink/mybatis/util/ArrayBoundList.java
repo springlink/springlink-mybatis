@@ -35,7 +35,7 @@ public class ArrayBoundList<E> extends AbstractList<E> implements BoundList<E>, 
 	}
 
 	public ArrayBoundList(int offset, int limit, int total, List<E> elements) {
-		Arguments.notNull(elements, "elements");
+		Asserts.notNull(elements, "elements");
 		this.elements = elements.toArray(new Object[elements.size()]);
 		this.offset = Math.max(offset, 0);
 		this.limit = Math.max(limit, 0);

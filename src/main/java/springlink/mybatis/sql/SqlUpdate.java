@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
-import springlink.mybatis.util.Arguments;
+import springlink.mybatis.util.Asserts;
 import springlink.mybatis.util.GetterResolver;
 
 public class SqlUpdate {
@@ -103,8 +103,8 @@ public class SqlUpdate {
 		private final List<Object> args;
 
 		private Set(SetType type, String property, Object... args) {
-			Arguments.notNull(type, "type");
-			Arguments.notEmpty(property, "property");
+			Asserts.notNull(type, "type");
+			Asserts.notEmpty(property, "property");
 			this.type = type;
 			this.property = property;
 			this.args = Collections.unmodifiableList(Lists.newArrayList(args));

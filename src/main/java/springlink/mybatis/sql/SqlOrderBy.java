@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
-import springlink.mybatis.util.Arguments;
+import springlink.mybatis.util.Asserts;
 import springlink.mybatis.util.GetterResolver;
 
 public class SqlOrderBy {
@@ -99,7 +99,7 @@ public class SqlOrderBy {
 		private final boolean descending;
 
 		private Order(String property, boolean descending) {
-			Arguments.notEmpty(property, "property");
+			Asserts.notEmpty(property, "property");
 			this.property = property;
 			this.descending = descending;
 		}

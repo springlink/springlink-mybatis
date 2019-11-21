@@ -30,7 +30,7 @@ import springlink.mybatis.sql.SqlCriterion;
 import springlink.mybatis.sql.SqlOrderBy;
 import springlink.mybatis.sql.SqlProjections;
 import springlink.mybatis.sql.SqlUpdate;
-import springlink.mybatis.util.Arguments;
+import springlink.mybatis.util.Asserts;
 import springlink.mybatis.util.BoundSqlBuilder;
 
 public abstract class SqlDialect {
@@ -66,8 +66,8 @@ public abstract class SqlDialect {
 	}
 
 	public static void add(String name, SqlDialect dialect) {
-		Arguments.notEmpty(name, "name");
-		Arguments.notNull(dialect, "dialect");
+		Asserts.notEmpty(name, "name");
+		Asserts.notNull(dialect, "dialect");
 		dialectMap.put(name, dialect);
 	}
 

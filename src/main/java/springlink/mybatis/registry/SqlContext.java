@@ -31,7 +31,7 @@ import springlink.mybatis.sql.SqlOrderBy;
 import springlink.mybatis.sql.SqlProjections;
 import springlink.mybatis.sql.SqlReference;
 import springlink.mybatis.sql.SqlUpdate;
-import springlink.mybatis.util.Arguments;
+import springlink.mybatis.util.Asserts;
 
 public final class SqlContext {
 	public static final String DEFAULT_PATH = "ctx";
@@ -49,16 +49,16 @@ public final class SqlContext {
 	}
 
 	public SqlContext(SqlDialect dialect, TypeAliasRegistry typeAliasRegistry, String rootPath) {
-		Arguments.notNull(dialect, "dialect");
-		Arguments.notNull(typeAliasRegistry, "typeAliasRegistry");
-		Arguments.notEmpty(rootPath, "rootPath");
+		Asserts.notNull(dialect, "dialect");
+		Asserts.notNull(typeAliasRegistry, "typeAliasRegistry");
+		Asserts.notEmpty(rootPath, "rootPath");
 		this.dialect = dialect;
 		this.typeAliasRegistry = typeAliasRegistry;
 		this.rootPath = rootPath;
 	}
 
 	public void bind(String expression) {
-		Arguments.notEmpty(expression, "expression");
+		Asserts.notEmpty(expression, "expression");
 		for (String element : expression.split(";")) {
 			String[] parts = element.split(":", 2);
 			if (parts.length == 0) {
@@ -79,7 +79,7 @@ public final class SqlContext {
 	}
 
 	public String sql(String name) {
-		Arguments.notEmpty(name, "name");
+		Asserts.notEmpty(name, "name");
 		Object obj = getObject(name);
 		if (obj == null) {
 			return "";
@@ -99,28 +99,28 @@ public final class SqlContext {
 	}
 
 	public SqlContext putEntity(String typeAlias, String alias) {
-		Arguments.notEmpty(typeAlias, "typeAlias");
+		Asserts.notEmpty(typeAlias, "typeAlias");
 		return putEntity(null, typeAlias, alias);
 	}
 
 	public SqlContext putEntity(String name, String typeAlias, String alias) {
-		Arguments.notEmpty(typeAlias, "typeAlias");
+		Asserts.notEmpty(typeAlias, "typeAlias");
 		return putEntity(name, typeAliasRegistry.resolveAlias(typeAlias), alias);
 	}
 
 	public SqlContext putEntity(Class<?> entityType, String alias) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		return putEntity(null, entityType, alias);
 	}
 
 	public SqlContext putEntity(String name, Class<?> entityType, String alias) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		entityInfoMap.put(Strings.nullToEmpty(name), new EntityInfo(SqlMetadata.forEntityType(entityType), alias));
 		return this;
 	}
 
 	public SqlContext putObject(String name, Object obj) {
-		Arguments.notEmpty(name, "name");
+		Asserts.notEmpty(name, "name");
 		objectMap.put(name, obj);
 		return this;
 	}
@@ -131,12 +131,12 @@ public final class SqlContext {
 	}
 
 	public String getObjectPath(String name) {
-		Arguments.notEmpty(name, "name");
+		Asserts.notEmpty(name, "name");
 		return rootPath + ".objects." + name;
 	}
 
 	public Object getObject(String name) {
-		Arguments.notEmpty(name, "name");
+		Asserts.notEmpty(name, "name");
 		return objectMap.get(name);
 	}
 
@@ -173,17 +173,17 @@ public final class SqlContext {
 	}
 
 	public SqlPropertyMetadata getProperty(String property) {
-		Arguments.notEmpty(property, "property");
+		Asserts.notEmpty(property, "property");
 		return getPropertyInfo(property).property;
 	}
 
 	public SqlEntityMetadata getPropertyEntity(String property) {
-		Arguments.notEmpty(property, "property");
+		Asserts.notEmpty(property, "property");
 		return getPropertyInfo(property).entity;
 	}
 
 	public String getColumnAlias(String property) {
-		Arguments.notEmpty(property, "property");
+		Asserts.notEmpty(property, "property");
 		return getPropertyInfo(property).alias;
 	}
 

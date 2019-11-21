@@ -23,7 +23,7 @@ import java.util.Set;
 
 import com.google.common.collect.Maps;
 
-import springlink.mybatis.util.Arguments;
+import springlink.mybatis.util.Asserts;
 
 public class SqlEntityMetadata {
 	private final Class<?> type;
@@ -106,7 +106,7 @@ public class SqlEntityMetadata {
 	}
 
 	public SqlJoinMetadata getJoin(String name) {
-		Arguments.notEmpty(name, "name");
+		Asserts.notEmpty(name, "name");
 		return joinNameMap.get(name);
 	}
 
@@ -119,7 +119,7 @@ public class SqlEntityMetadata {
 	}
 
 	public SqlPropertyMetadata getProperty(String name) {
-		Arguments.notEmpty(name, "name");
+		Asserts.notEmpty(name, "name");
 		if (name.startsWith("#")) {
 			return propertyAliasMap.get(name.substring(1));
 		} else {

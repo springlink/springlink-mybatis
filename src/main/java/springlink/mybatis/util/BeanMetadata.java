@@ -44,7 +44,7 @@ public final class BeanMetadata {
 	}
 
 	public static BeanMetadata forBeanType(Class<?> beanType) {
-		Arguments.notNull(beanType, "beanType");
+		Asserts.notNull(beanType, "beanType");
 		return instanceCache.computeIfAbsent(beanType, type -> {
 			BeanInfo info;
 			try {

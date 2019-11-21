@@ -39,7 +39,7 @@ import springlink.mybatis.annotation.SqlProperty;
 import springlink.mybatis.annotation.strategy.NameStrategy;
 import springlink.mybatis.sql.SqlCriterion;
 import springlink.mybatis.sql.SqlReference;
-import springlink.mybatis.util.Arguments;
+import springlink.mybatis.util.Asserts;
 import springlink.mybatis.util.BeanMetadata;
 
 public final class SqlMetadata {
@@ -49,7 +49,7 @@ public final class SqlMetadata {
 	}
 
 	public static SqlEntityMetadata forEntityType(Class<?> entityType) {
-		Arguments.notNull(entityType, "entityType");
+		Asserts.notNull(entityType, "entityType");
 		return instanceCache.computeIfAbsent(entityType, SqlMetadata::resolveEntity);
 	}
 

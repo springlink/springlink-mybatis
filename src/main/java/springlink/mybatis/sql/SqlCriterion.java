@@ -29,7 +29,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import springlink.mybatis.util.Arguments;
+import springlink.mybatis.util.Asserts;
 import springlink.mybatis.util.GetterResolver;
 
 public abstract class SqlCriterion {
@@ -204,8 +204,8 @@ public abstract class SqlCriterion {
 		private final List<Object> args;
 
 		private Condition(ConditionType type, String property, Object... args) {
-			Arguments.notNull(type, "type");
-			Arguments.notEmpty(property, "property");
+			Asserts.notNull(type, "type");
+			Asserts.notEmpty(property, "property");
 			this.type = type;
 			this.property = property;
 			this.args = Collections.unmodifiableList(Lists.newArrayList(args));
@@ -274,7 +274,7 @@ public abstract class SqlCriterion {
 		private final List<Object> args;
 
 		private Constant(ConstantType type, Object... args) {
-			Arguments.notNull(type, "type");
+			Asserts.notNull(type, "type");
 			this.type = type;
 			this.args = Collections.unmodifiableList(Lists.newArrayList(args));
 		}
@@ -310,7 +310,7 @@ public abstract class SqlCriterion {
 		private final List<SqlCriterion> criteria;
 
 		private Junction(JunctionType type, SqlCriterion... criteria) {
-			Arguments.notNull(type, "type");
+			Asserts.notNull(type, "type");
 			this.type = type;
 			this.criteria = Collections.unmodifiableList(Stream.of(criteria)
 					.filter(Objects::nonNull).collect(Collectors.toList()));
