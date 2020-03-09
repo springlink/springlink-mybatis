@@ -39,7 +39,106 @@
     <h2.version>1.4.197</h2.version>
     <wix-embedded-mysql.version>4.2.0</wix-embedded-mysql.version>
     <mysql-connector.version>5.1.47</mysql-connector.version>
+    <source-plugin.version>3.0.1</source-plugin.version>
+    <javadoc-plugin.version>2.10.4</javadoc-plugin.version>
+    <gpg-plugin.version>1.6</gpg-plugin.version>
   </properties>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <tag>master</tag>
+    <url>https://github.com/springlink/springlink-mybatis</url>
+    <connection>scm:git:git@github.com:springlink/springlink-mybatis.git</connection>
+    <developerConnection>scm:git:git@github.com:springlink/springlink-mybatis.git</developerConnection>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>eclipseAce</name>
+      <email>vcsdk2468@gmail.com</email>
+    </developer>
+  </developers>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${source-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <attach>true</attach>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${javadoc-plugin.version}</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <links>
+                <link>
+                  http://docs.oracle.com/javase/${javadoc.version}/docs/api
+                </link>
+              </links>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${gpg-plugin.version}</version>
+            <executions>
+              <execution>
+                <phase>install</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <distributionManagement>
+        <repository>
+          <id>oss</id>
+          <url>
+            https://oss.sonatype.org/service/local/staging/deploy/maven2
+        </url>
+        </repository>
+        <snapshotRepository>
+          <id>oss</id>
+          <uniqueVersion>false</uniqueVersion>
+          <url>
+            https://oss.sonatype.org/content/repositories/snapshots
+        </url>
+        </snapshotRepository>
+      </distributionManagement>
+    </profile>
+  </profiles>
 
   <dependencies>
     <dependency>
