@@ -19,7 +19,7 @@
 
 <configuration>
   <typeAliases>
-    <package name="springlink.mybatis.entity" />
+    <package name="com.github.springlink.mybatis.entity" />
   </typeAliases>
 
   <environments default="development">

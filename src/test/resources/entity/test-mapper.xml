@@ -15,8 +15,8 @@
   limitations under the License.
 -->
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="springlink.mybatis">
-  <select id="selectPosts" resultType="springlink.mybatis.entity.Post">
+<mapper namespace="com.github.springlink.mybatis">
+  <select id="selectPosts" resultType="com.github.springlink.mybatis.entity.Post">
     SELECT * FROM post WHERE blog_id IN (<foreach collection="blogIds" item="id" separator=",">#{id}</foreach>) ORDER BY id
   </select>
 </mapper>

@@ -26,5 +26,5 @@
     <appender-ref ref="STDOUT" />
   </root>
   
-  <logger name="springlink.mybatis" level="DEBUG" />
+  <logger name="com.github.springlink.mybatis" level="DEBUG" />
 </configuration>

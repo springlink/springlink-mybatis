@@ -1,2 +1,2 @@
 # springlink-mybatis
-A MyBatis enhancement library
+MyBatis ORM Framework
