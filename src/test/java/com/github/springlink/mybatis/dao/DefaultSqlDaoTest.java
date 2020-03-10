@@ -281,7 +281,13 @@ public class DefaultSqlDaoTest {
 
 			dao.select(Post.class).where((SqlCriterion) null).orderBy((SqlOrderBy) null);
 
+			dao.select(Post.class).asList((SqlProjections) null);
+
 			dao.update(Post.class, (SqlUpdate) null, null);
+
+			dao.delete(Post.class, (SqlCriterion) null);
+
+			dao.insert(Post.class, null);
 		}
 	}
 

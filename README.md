@@ -39,4 +39,166 @@ public SqlDao sqlDao(SqlSessionFactory sqlSessionFactory, SqlRegistry registry) 
   - <code>name</code>：为该实体连接命名，默认为空，直接使用注解字段的名称
   - <code>type</code>：指定连接类型，支持Inner、Left Outer、Right Outer和Full Outer，默认为Left Outer
 
-## SqlDao
+## SqlDao 接口
+这个接口是框架的核心接口，所有DAO操作都从这个接口发起
+### select
+调用<code>SqlDao.select(Class&lt;T&gt; entityType)</code>方法获取<code>Selector&lt;T&gt;</code>对象，支持链式调用
+Selector接口主要包含以下方法
+- <code>Selector&lt;T&gt; where(@Nullable SqlCriterion criterion)</code>
+  设置select条件，多次调用只保留最后一次的值
+  ```java
+  // 查询id为123的Post
+  dao.select(Post.class).where(SqlCriterion.eq("id", 123)).asOne();
+  
+  // Lambda版本
+  dao.select(Post.class).where(c -> c.eq(Post::getId, 123));
+  ```
+- <code>Selector&lt;T&gt; orderBy(@Nullable SqlOrderBy order)</code>
+  设置select排序，多次调用只保留最后一次的值
+  ```java
+  // 根据标题（升序）和创建时间（降序）排序
+  dao.select(Post.class).orderBy(SqlOrderBy.create().asc("title").desc("createTime")).asList();
+
+  // Lambda版本
+  dao.select(Post.class).orderBy(o -> o.asc(Post::getTitle).desc(Post::getCreateTime)).asList();
+  ```
+- <code>Selector&lt;T&gt; forUpdate()</code>
+  设置是否附带forUpdate
+  ```java
+  // 查询id为123的Post，并加上FOR UPDATE
+  dao.select(Post.class).where(c -> c.eq(Post::getId, 123)).forUpdate().asOne();
+
+  // 可以通过参数指定是否加上FOR UPDATE
+  dao.select(Post.class).where(c -> c.eq(Post::getId, 123)).forUpdate(false).asOne();
+  ```
+- <code>Optional&lt;T&gt; asOne()</code>
+  执行查询，返回最多一条结果，与<code>SqlSession.selectOne()</code>执行效果相同
+  ```java
+  // 查询id为123的Post，如果存在，打印创建时间
+  // 这里使用了Java8的Optional接口简化写法，省去了额外的if条件判断
+  dao.select(Post.class).where(c -> c.eq(Post::getId, 123)).asOne()
+      .ifPresent(post -> System.out.println(post.getCreateTime()));
+  ```
+- <code>&lt;R&gt; Optional&lt;R&gt; asOne(SqlProjections projections)</code>
+  执行查询，返回一个或多个字段
+  ```java
+  // 查询id为123的Post，打印createTime字段
+  dao.select(Post.class).where(c -> c.eq(Post::getId, 123))
+      .asOne(SqlProjections.create().property("createTime")))
+      .ifPresent(createTime -> System.out.println(createTime));
+  
+  // 查询id为123的Post，返回title和createTime字段
+  dao.select(Post.class).where(c -> c.eq(Post::getId, 123))
+      .asOne(SqlProjections.create()
+          .property("postTitle", "title")
+          .property("postCreateTime", "createTime"))
+      .ifPresent(post -> System.out.println(post.getTitle() + "\t" + post.getCreateTime()));
+
+  // Lambda写法
+  dao.select(Post.class).where(c -> c.eq(Post::getId, 123))
+      .asOne(p -> p.property(Post::getCreateTime))
+      .ifPresent(createTime -> System.out.println(createTime));
+
+  dao.select(Post.class).where(c -> c.eq(Post::getId, 123))
+      .asOne(p -> p.property("postTitle", "title")
+          .property("postCreateTime", "createTime"))
+      .ifPresent(result -> System.out.println(result.get("postTitle") + "\t" + result.get("postCreateTime")));
+  ```
+- <code>List&lt;T&gt; asList()</code>
+  执行查询，返回多条结果
+  ```java
+  // 查询start大于等于100的Post
+  dao.select(Post.class).where(c -> c.ge(Post::getStar, 100)).asList();
+
+  // 查询start大于等于100的Post，并按照LIMIT 100, 50进行分页
+  dao.select(Post.class).where(c -> c.ge(Post::getStar, 100))
+      .asList(new RowBounds(100, 50));
+      
+  // 查询start大于等于100的Post，按照star字段降序，返回title和star字段，并按照LIMIT 100, 50进行分页
+  dao.select(Post.class).where(c -> c.ge(Post::getStar, 100))
+      .orderBy(o -> o.desc(Post::getStar))
+      .asList(new RowBounds(100, 50), p -> p.property(Post::getTitle).property(Post::getStar));
+  ```
+- <code>BoundList&lt;T&gt; asBoundList(RowBounds rowBounds)</code>
+  执行查询，返回多条结果，并统计总数
+  ```java
+  // 查询start大于等于100的Post，并按照LIMIT 100, 50进行分页
+  dao.select(Post.class).where(c -> c.ge(Post::getStar, 100))
+      .asBoundList(new RowBounds(100, 50));
+      
+  // 查询start大于等于100的Post，按照star字段降序，返回title和star字段，并按照LIMIT 100, 50进行分页
+  dao.select(Post.class).where(c -> c.ge(Post::getStar, 100))
+      .orderBy(o -> o.desc(Post::getStar))
+      .asBoundList(new RowBounds(100, 50), p -> p.property(Post::getTitle).property(Post::getStar));
+  ```
+- <code>&lt;K&gt; Map&lt;K, T&gt; asMap(String mapKey)</code>
+  执行查询，返回多条结果，并以mapKey为关键字放置在map中，与<code>SqlSession.selectMap()</code>执行效果相同
+  ```java
+  // 查询所有Post，并按照id放置在map中
+  dao.select(Post.class).asMap("id");
+  ```
+### select count
+
+<code>long count(Class&lt;?&gt; entityType, @Nullable SqlCriterion criterion)</code>
+
+```java
+  // 查询title包含“title”的Post数量
+  dao.count(Post.class, c -> c.like(Post::getTitle, "%news%"));
+```
+
+### select exists
+
+<code>boolean exists(Class&lt;?&gt; entityType, @Nullable SqlCriterion criterion)</code>
+
+```java
+  // 查询是否存在id为123的Post
+  dao.exists(Post.class, c -> c.eq(Post::getId, 123));
+```
+
+### update
+- <code>&lt;T&gt; int update(Class&lt;T&gt; entityType, @Nullable SqlUpdate update, @Nullable SqlCriterion criterion)</code>
+  更新指定字段
+  ```java
+  // id为123的Post，title设置为“Big news”，star值增加3
+  dao.update(Post.class,
+      SqlUpdate.create().set("title", "Big news").add("star", 1),
+      SqlCriterion.eq("id", 123));
+
+  // Lambda写法
+  dao.update(Post.class,
+      u -> u.set(Post::getTitle, "Big news").add(Post::getStar, 1),
+      c -> c.eq(Post::getId, 123));
+  ```
+- <code>&lt;T&gt; int updateEntity(Class&lt;T&gt; entityType, @Nullable T entity, boolean ignoreNulls, @Nullable SqlCriterion criterion)</code>
+  更新整个实体
+  ```java
+  Post post = new Post();
+  post.setTitle("Big news");
+  post.setStar(500);
+  // 按照post中的非空字段更新id为123的Post
+  dao.update(Post.class, post, true, c -> c.eq(Post::getId, 123));
+
+  // 其中ignoreNulls可以省略，默认值为true
+  dao.update(Post.class, post, c -> c.eq(Post::getId, 123));
+  ```
+
+### delete
+
+<code>int delete(Class&lt;?&gt; entityType, @Nullable SqlCriterion criterion)</code>
+
+```java
+// 删除star小于10的Post
+dao.delete(Post.class, c -> c.lt(Post::getStar, 10));
+```
+
+### insert
+
+<code>&lt;T&gt; int insert(Class&lt;T&gt; entityType, @Nullable T value)</code>
+
+```java
+Post post = new Post();
+post.setTitle("New post");
+post.setCreateTime(new Date());
+// 插入新的Post
+dao.insert(Post.class, post);
+```

@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
@@ -57,7 +59,7 @@ public interface SqlDao {
 	 * @param value      an object contains entity values
 	 * @return affacted rows
 	 */
-	<T> int insert(Class<T> entityType, T value);
+	<T> int insert(Class<T> entityType, @Nullable T value);
 
 	/**
 	 * Execute a delete operation for the entity type.
@@ -66,7 +68,7 @@ public interface SqlDao {
 	 * @param criterion  conditions
 	 * @return affacted rows
 	 */
-	int delete(Class<?> entityType, SqlCriterion criterion);
+	int delete(Class<?> entityType, @Nullable SqlCriterion criterion);
 
 	/**
 	 * Execute a delete operation for the entity type.
@@ -88,7 +90,7 @@ public interface SqlDao {
 	 * @param criterion  conditions
 	 * @return count of the matching rows
 	 */
-	long count(Class<?> entityType, SqlCriterion criterion);
+	long count(Class<?> entityType, @Nullable SqlCriterion criterion);
 
 	/**
 	 * Execute a count operation for the entity type.
@@ -110,7 +112,7 @@ public interface SqlDao {
 	 * @param criterion  conditions
 	 * @return whether a matching rows was found
 	 */
-	boolean exists(Class<?> entityType, SqlCriterion criterion);
+	boolean exists(Class<?> entityType, @Nullable SqlCriterion criterion);
 
 	/**
 	 * Execute a exists operation for the entity type.
@@ -134,7 +136,7 @@ public interface SqlDao {
 	 * @param criterion  conditions
 	 * @return affacted rows
 	 */
-	<T> int update(Class<T> entityType, SqlUpdate update, SqlCriterion criterion);
+	<T> int update(Class<T> entityType, @Nullable SqlUpdate update, @Nullable SqlCriterion criterion);
 
 	/**
 	 * Execute a update operation for the entity type.
@@ -164,7 +166,8 @@ public interface SqlDao {
 	 * @param criterion   conditions
 	 * @return affacted rows
 	 */
-	default <T> int updateEntity(Class<T> entityType, T entity, boolean ignoreNulls, SqlCriterion criterion) {
+	default <T> int updateEntity(Class<T> entityType, @Nullable T entity, boolean ignoreNulls,
+			@Nullable SqlCriterion criterion) {
 		if (entity == null) {
 			return 0;
 		}
@@ -196,7 +199,7 @@ public interface SqlDao {
 	 * @param criterionSupplier conditions supplier
 	 * @return affacted rows
 	 */
-	default <T> int updateEntity(Class<T> entityType, T entity, boolean ignoreNulls,
+	default <T> int updateEntity(Class<T> entityType, @Nullable T entity, boolean ignoreNulls,
 			Function<SqlCriterion.Lambda<T>, ? extends SqlCriterion> criterionSupplier) {
 		return updateEntity(entityType, entity, ignoreNulls,
 				SqlCriterion.lambda(entityType, criterionSupplier));
@@ -211,7 +214,7 @@ public interface SqlDao {
 	 * @param criterion  conditions
 	 * @return affacted rows
 	 */
-	default <T> int updateEntity(Class<T> entityType, T entity, SqlCriterion criterion) {
+	default <T> int updateEntity(Class<T> entityType, T entity, @Nullable SqlCriterion criterion) {
 		return updateEntity(entityType, entity, true, criterion);
 	}
 
@@ -224,7 +227,7 @@ public interface SqlDao {
 	 * @param criterionSupplier conditions supplier
 	 * @return affacted rows
 	 */
-	default <T> int updateEntity(Class<T> entityType, T entity,
+	default <T> int updateEntity(Class<T> entityType, @Nullable T entity,
 			Function<SqlCriterion.Lambda<T>, ? extends SqlCriterion> criterionSupplier) {
 		return updateEntity(entityType, entity, SqlCriterion.lambda(entityType, criterionSupplier));
 	}
@@ -287,7 +290,7 @@ public interface SqlDao {
 		 * @param criterion conditions
 		 * @return the selector itself
 		 */
-		Selector<T> where(SqlCriterion criterion);
+		Selector<T> where(@Nullable SqlCriterion criterion);
 
 		/**
 		 * Change the current conditions.
@@ -305,7 +308,7 @@ public interface SqlDao {
 		 * @param order orders
 		 * @return the selector itself
 		 */
-		Selector<T> orderBy(SqlOrderBy order);
+		Selector<T> orderBy(@Nullable SqlOrderBy order);
 
 		/**
 		 * Change the current orders.
