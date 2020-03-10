@@ -202,3 +202,69 @@ post.setCreateTime(new Date());
 // 插入新的Post
 dao.insert(Post.class, post);
 ```
+
+## SqlCriterion条件
+```java
+SqlCriterion.eq("id", 123); // id = 123
+SqlCriterion.ne("id", 123); // id <> 123
+SqlCriterion.gt("star", 100); // star > 100
+SqlCriterion.ge("star", 100); // star >= 100
+SqlCriterion.lt("star", 200); // star < 200
+SqlCriterion.le("star", 200); // star <= 200
+SqlCriterion.isNull("postId"); // postId IS NULL
+SqlCriterion.isNotNull("postId"); // postId IS NOT NULL
+SqlCriterion.like("title", "%news%"); // title LIKE '%news%'
+SqlCriterion.like("title", "%big^_news%", "^"); // title LIKE '%big^_news%' ESCAPE '^'
+SqlCriterion.between("star", 20, 80); // star BETWEEN 20 AND 80
+SqlCriterion.in("section", Arrays.asList("SPORTS", "LIVE", "ART")); // section IN('SPORTS', 'LIVE', 'ART')
+SqlCriterion.in("section", "SPORTS", "LIVE", "ART"); // section IN('SPORTS', 'LIVE', 'ART')
+
+SqlCriterion.and(SqlCriterion.lt("star", 800), SqlCriterion.gt("star", 100)); // star < 800 AND star > 100
+SqlCriterion.and(Arrays.asList(SqlCriterion.lt("star", 800), SqlCriterion.gt("star", 100))); // star < 800 AND star > 100
+
+SqlCriterion.or(SqlCriterion.gt("star", 50), SqlCriterion.lt("star", 40)); // star > 50 OR star < 40
+SqlCriterion.or(Arrays.asList(SqlCriterion.gt("star", 50), SqlCriterion.lt("star", 40))); // star > 50 OR star < 40
+
+SqlCriterion.not(SqlCriterion.eq("id", 123)); // NOT (id = 123)
+SqlCriterion.not(SqlCriterion.or(SqlCriterion.gt("star", 50), SqlCriterion.lt("star", 40))); // NOT(star > 50 OR star < 40)
+SqlCriterion.notAny(SqlCriterion.gt("star", 50), SqlCriterion.lt("star", 40)); // NOT(star > 50 OR star < 40)
+
+SqlCriterion..none(); // 空条件
+SqlCriterion.trueValue(); // (1 = 1)
+SqlCriterion.falseValue(); // (1 = 0)
+
+// Lambda版本
+SqlCriterion.lambda(Post.class, c -> c.eq(Post::getId, 123));
+
+SqlCriterion.lambda(Post.class, c -> SqlCriterion.and(
+  c.gt(Post::getStar, 500),
+  c.like(Post::getTitle, "%news%"),
+  c.in(Post::getSection, "SPORTS", "ART")
+));
+```
+
+## SqlOrderBy排序
+
+```java
+SqlOrderBy.create().desc("star").asc("title"); // ORDER BY star DESC, title ASC
+
+// Lambda版本
+SqlOrderBy.lambda(Post.class, o -> o.desc(Post::getStar).asc(Post::getTitle));
+```
+
+## SqlUpdate更新
+
+```java
+SqlUpdate.create().set("title", "New title").add("star", 2); // SET title = 'New title', star = star + 2, 
+SqlUpdate.create().subtract("star", 3).nullify("createTime"); // SET star = star - 3, createTime = NULL
+
+// Lambda版本
+SqlUpdate.lambda(Post.class, u -> u.set(Post::getTitle, "New title").add(Post::getStar, 2));
+SqlUpdate.lambda(Post.class, u -> u.subtract(Post::getStar, 3).nullify(Post::getCreateTime));
+```
+
+## SqlProjections投影
+
+```java
+SqlProjections.
+```
