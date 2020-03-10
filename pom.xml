@@ -28,6 +28,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.8</java.version>
+    <javadoc.version>8</javadoc.version>
+    
+    <source-plugin.version>3.0.1</source-plugin.version>
+    <javadoc-plugin.version>2.10.4</javadoc-plugin.version>
+    <gpg-plugin.version>1.6</gpg-plugin.version>
 
     <mybatis.version>3.5.1</mybatis.version>
     <guava.version>27.1-jre</guava.version>
@@ -39,9 +44,6 @@
     <h2.version>1.4.197</h2.version>
     <wix-embedded-mysql.version>4.2.0</wix-embedded-mysql.version>
     <mysql-connector.version>5.1.47</mysql-connector.version>
-    <source-plugin.version>3.0.1</source-plugin.version>
-    <javadoc-plugin.version>2.10.4</javadoc-plugin.version>
-    <gpg-plugin.version>1.6</gpg-plugin.version>
   </properties>
 
   <licenses>
