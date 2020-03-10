@@ -23,6 +23,7 @@
   <packaging>jar</packaging>
   <name>SpringLink :: MyBatis</name>
   <description>MyBatis ORM Framework</description>
+  <url>https://github.com/springlink/springlink-mybatis</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
