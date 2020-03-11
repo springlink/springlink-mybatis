@@ -1,6 +1,15 @@
 # springlink-mybatis
 基于MyBatis的ORM框架
 
+## Maven Repo
+```xml
+<dependency>
+  <groupId>com.github.springlink</groupId>
+  <artifactId>springlink-mybatis</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
+
 ## Spring JavaConfig 配置
 ```java
 @Bean
