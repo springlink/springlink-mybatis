@@ -168,7 +168,7 @@ Selector接口主要包含以下方法
 - <code>&lt;T&gt; int update(Class&lt;T&gt; entityType, @Nullable SqlUpdate update, @Nullable SqlCriterion criterion)</code>
   更新指定字段
   ```java
-  // id为123的Post，title设置为“Big news”，star值增加3
+  // id为123的Post，title设置为“Big news”，star值增加1
   dao.update(Post.class,
       SqlUpdate.create().set("title", "Big news").add("star", 1),
       SqlCriterion.eq("id", 123));
@@ -258,7 +258,7 @@ SqlCriterion.lambda(Post.class, c -> SqlCriterion.and(
 SqlOrderBy.create().desc("star").asc("title"); // ORDER BY star DESC, title ASC
 
 // Lambda版本
-SqlOrderBy.lambda(Post.class, o -> o.desc(Post::getStar).asc(Post::getTitle));
+SqlOrderBy.create(Post.class).desc(Post::getStar).asc(Post::getTitle);
 ```
 
 ## SqlUpdate更新
@@ -268,12 +268,96 @@ SqlUpdate.create().set("title", "New title").add("star", 2); // SET title = 'New
 SqlUpdate.create().subtract("star", 3).nullify("createTime"); // SET star = star - 3, createTime = NULL
 
 // Lambda版本
-SqlUpdate.lambda(Post.class, u -> u.set(Post::getTitle, "New title").add(Post::getStar, 2));
-SqlUpdate.lambda(Post.class, u -> u.subtract(Post::getStar, 3).nullify(Post::getCreateTime));
+SqlUpdate.create(Post.class).set(Post::getTitle, "New title").add(Post::getStar, 2);
+SqlUpdate.create(Post.class).subtract(Post::getStar, 3).nullify(Post::getCreateTime);
 ```
 
-## SqlProjections投影
-
+## 使用<code>@SqlJoin</code>注解进行实体连接
+为了便于解释此功能的应用场景，我们假设当前有两个用户相关实体类
 ```java
-SqlProjections.
+// 用户实体
+public class User {
+  private String id;
+
+  private String username;
+
+  private String password;
+
+  private String groupId;
+
+  // 此处省略getter和setter
+}
+
+// 用户组实体
+public class Group {
+  private String id;
+
+  private String groupName;
+
+  // 此处省略getter和setter
+}
+
+// 帖子实体
+public class Post {
+  private String id;
+
+  private String title;
+
+  private String userId;
+
+  private String createDate;
+
+  // 此处省略getter和setter
+}
+```
+此时我们希望实现下列SQL语句
+```sql
+-- 查询帖子列表时，通过左连接将帖子对应的用户名username一并带出
+SELECT t.id, t.title, t.userId, t.createDate, a.username FROM user t LEFT JOIN post a ON a.userId = t.id;
+```
+这时候我们可以通过给Post实体增加User的实体连接将username引入，作为Post的一个引用字段
+```java
+public class Post {
+  // 连接User实体，并命名为postUser，连接条件为postUser.id = userId，此处userId即指当前实体的userId字段
+  @SqlJoin(User.class)
+  private static final SqlCriterion postUser = SqlCriterion.eq("postUser.id", "userId");
+
+  private String id;
+
+  private String title;
+
+  private String userId;
+
+  private String createDate;
+
+  // 引用postUser的username字段
+  @SqlProperty(reference = "postUser.username")
+  private String username;
+
+  // 此处省略getter和setter
+}
+```
+连接可以定义多个，下面是更复杂的例子
+```java
+public class Post {
+  @SqlJoin(User.class)
+  private static final SqlCriterion postUser = SqlCriterion.eq("postUser.id", "userId");
+
+  // 将用户所属组关联进来
+  @SqlJoin(Group.class)
+  private static final SqlCriterion postUserGroup = SqlCriterion.eq("postUserGroup.id", "postUser.groupId")
+
+  private String id;
+
+  private String title;
+
+  private String userId;
+
+  private String createDate;
+
+  @SqlProperty(reference = "postUser.username")
+  private String username;
+
+  // 此处省略getter和setter
+}
 ```
