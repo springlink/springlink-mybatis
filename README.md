@@ -320,8 +320,9 @@ SELECT t.id, t.title, t.userId, t.createDate, a.username FROM post t LEFT JOIN u
 public class Post {
   // 连接User实体，并命名为postUser，连接条件为postUser.id = userId，此处userId即指当前实体的userId字段
   // 请注意这里必须使用static final修饰，并且类型为SqlCriterion，否则实体扫描时会产生错误
+  // 这里eq的值使用了SqlReference，意味着postUser.id与userId构成相等条件，而不是postUser.id = 'userId'
   @SqlJoin(User.class)
-  private static final SqlCriterion postUser = SqlCriterion.eq("postUser.id", "userId");
+  private static final SqlCriterion postUser = SqlCriterion.eq("postUser.id", SqlReference.of("userId"));
 
   private String id;
 
@@ -342,11 +343,11 @@ public class Post {
 ```java
 public class Post {
   @SqlJoin(User.class)
-  private static final SqlCriterion postUser = SqlCriterion.eq("postUser.id", "userId");
+  private static final SqlCriterion postUser = SqlCriterion.eq("postUser.id", SqlReference.of("userId"));
 
   // 将用户所属组关联进来
   @SqlJoin(Group.class)
-  private static final SqlCriterion postUserGroup = SqlCriterion.eq("postUserGroup.id", "postUser.groupId")
+  private static final SqlCriterion postUserGroup = SqlCriterion.eq("postUserGroup.id", SqlReference.of("postUser.groupId"))
 
   private String id;
 
@@ -403,10 +404,10 @@ public class Post {
 
 public class PostWithUserInfo extends Post {
   @SqlJoin(User.class)
-  private static final SqlCriterion postUser = SqlCriterion.eq("postUser.id", "userId");
+  private static final SqlCriterion postUser = SqlCriterion.eq("postUser.id", SqlReference.of("userId"));
 
   @SqlJoin(Group.class)
-  private static final SqlCriterion postUserGroup = SqlCriterion.eq("postUserGroup.id", "postUser.groupId");
+  private static final SqlCriterion postUserGroup = SqlCriterion.eq("postUserGroup.id", SqlReference.of("postUser.groupId"));
 
   @SqlProperty(reference = "postUser.username")
   private String username;
@@ -419,3 +420,17 @@ public class PostWithUserInfo extends Post {
 ```
 继承的优先级：属性注解 &gt; Getter注解 &gt; Setter注解 &gt; 父类属性注解 &gt; 父类Getter注解 &gt; 父类Setter注解
 实体连接一样会被子类继承下来，如果子类声明了同名的连接，则会覆盖父类的声明
+
+请特别注意，实体连接目前仅作用于查询语句，在其他更新（包括删除和插入）语句中将不可用，如果你在更新语句中使用了引用字段，那么将会出现SQL错误，类似下列异常
+```
+org.apache.ibatis.exceptions.PersistenceException: 
+### Error updating database.  Cause: org.h2.jdbc.JdbcSQLException: Column "J2.USERNAME" not found; SQL statement:
+UPDATE `post` t   SET t.`subject` = j2.`username`    WHERE t.`id` = ? [42122-197]
+### The error may exist in SqlRegistry[com.github.springlink.mybatis.entity.Post]
+### The error may involve com.github.springlink.mybatis.entity.Post.update
+### The error occurred while executing an update
+### SQL: UPDATE `post` t   SET t.`subject` = j2.`username`    WHERE t.`id` = ?
+### Cause: org.h2.jdbc.JdbcSQLException: Column "J2.USERNAME" not found; SQL statement:
+UPDATE `post` t   SET t.`subject` = j2.`username`    WHERE t.`id` = ? [42122-197]
+...
+```

@@ -16,8 +16,6 @@
 
 package com.github.springlink.mybatis.dao;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 import static com.github.springlink.mybatis.sql.SqlCriterion.and;
 import static com.github.springlink.mybatis.sql.SqlCriterion.between;
 import static com.github.springlink.mybatis.sql.SqlCriterion.eq;
@@ -34,6 +32,8 @@ import static com.github.springlink.mybatis.sql.SqlCriterion.ne;
 import static com.github.springlink.mybatis.sql.SqlCriterion.not;
 import static com.github.springlink.mybatis.sql.SqlCriterion.or;
 import static com.github.springlink.mybatis.sql.SqlCriterion.trueValue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -44,20 +44,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.session.RowBounds;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 
 import com.github.springlink.mybatis.entity.Author;
 import com.github.springlink.mybatis.entity.Author2;
@@ -72,8 +58,22 @@ import com.github.springlink.mybatis.registry.SqlRegistry;
 import com.github.springlink.mybatis.sql.SqlCriterion;
 import com.github.springlink.mybatis.sql.SqlOrderBy;
 import com.github.springlink.mybatis.sql.SqlProjections;
+import com.github.springlink.mybatis.sql.SqlReference;
 import com.github.springlink.mybatis.sql.SqlUpdate;
 import com.github.springlink.mybatis.util.BoundList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.RowBounds;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 public class DefaultSqlDaoTest {
 	private static SqlSessionFactory sqlSessionFactory;
@@ -653,5 +653,23 @@ public class DefaultSqlDaoTest {
 			s += st;
 		}
 		System.out.println(String.format("avg: %.2f, top1: %d, top2: %d, top3: %d, ", ((double) s / times), ts1, ts2, ts3));
+	}
+
+	@Test
+	public void testUpdateWithReferenceValue() {
+		try (SqlSession session = sqlSessionFactory.openSession()) {
+			SqlDao dao = new DefaultSqlDao(sqlRegistry, session);
+
+			assertThat(dao.update(Post.class,
+				SqlUpdate.create().set("subject", SqlReference.of("section")), eq("id", 1))).isEqualTo(1);
+
+			assertThat(dao.select(Post.class).where(eq("section", SqlReference.of("subject"))).asList()).hasSize(1);
+
+			// Cross table reference in update is currently not supported
+			// assertThat(dao.update(Post.class,
+			// 	SqlUpdate.create().set("subject", SqlReference.of("blogAuthorName")), eq("id", 1))).isEqualTo(1);
+
+			// assertThat(dao.select(Post.class).where(eq("blogAuthorName", SqlReference.of("subject"))).asList()).hasSize(1);
+		}
 	}
 }
