@@ -273,7 +273,7 @@ SqlUpdate.create(Post.class).subtract(Post::getStar, 3).nullify(Post::getCreateT
 ```
 
 ## 使用<code>@SqlJoin</code>注解进行实体连接
-为了便于解释此功能的应用场景，我们假设当前有两个用户相关实体类
+为了便于解释此功能的应用场景，我们假手头有三个实体类
 ```java
 // 用户实体
 public class User {
@@ -313,12 +313,13 @@ public class Post {
 此时我们希望实现下列SQL语句
 ```sql
 -- 查询帖子列表时，通过左连接将帖子对应的用户名username一并带出
-SELECT t.id, t.title, t.userId, t.createDate, a.username FROM user t LEFT JOIN post a ON a.userId = t.id;
+SELECT t.id, t.title, t.userId, t.createDate, a.username FROM post t LEFT JOIN user a ON a.id = t.userId;
 ```
-这时候我们可以通过给Post实体增加User的实体连接将username引入，作为Post的一个引用字段
+由于username存在于User实体而不是Post，这时候我们可以通过给Post实体增加User的实体连接，将username引入，作为Post的一个引用字段
 ```java
 public class Post {
   // 连接User实体，并命名为postUser，连接条件为postUser.id = userId，此处userId即指当前实体的userId字段
+  // 请注意这里必须使用static final修饰，并且类型为SqlCriterion，否则实体扫描时会产生错误
   @SqlJoin(User.class)
   private static final SqlCriterion postUser = SqlCriterion.eq("postUser.id", "userId");
 
@@ -337,7 +338,7 @@ public class Post {
   // 此处省略getter和setter
 }
 ```
-连接可以定义多个，下面是更复杂的例子
+这样一来，关于Post实体的select操作将会附加一条join语句，与主表关联。连接可以定义多个，下面是更复杂的例子，我们进一步地将用户组Group一并引入
 ```java
 public class Post {
   @SqlJoin(User.class)
@@ -358,6 +359,63 @@ public class Post {
   @SqlProperty(reference = "postUser.username")
   private String username;
 
+  @SqlProperty(reference = "postUserGroup.groupName")
+  private String userGroupName;
+
   // 此处省略getter和setter
 }
 ```
+引入的字段不仅仅用来展示，还可以作为查询条件
+```java
+// 查询所有所属用户组为ADMIN的相关帖子
+dao.select(Post.class).where(c -> c.eq(Post::getUserGroupName, "ADMIN")).asList();
+```
+上述操作将会生成下列SQL语句
+```sql
+SELECT t.id, t.title, t.userId, t.createDate, a.username, b.groupName
+FROM post t
+    LEFT JOIN user a ON a.id = t.userId
+    LEFT JOIN group b ON b.id = a.groupId
+WHERE b.groupName = 'ADMIN';
+```
+请注意，声明表连接时你不必担心先后顺序，因为框架会分析关联条件进行拓扑排序，总之，即使调换postUser和postUserGroup，也不会生成下面这种错误的SQL语句
+```sql
+SELECT t.id, t.title, t.userId, t.createDate, a.username, b.groupName
+FROM post t
+    LEFT JOIN group b ON b.id = a.groupId -- JOIN顺序错误，应先连接user a，此处才能引用a.groupId
+    LEFT JOIN user a ON a.id = t.userId
+WHERE b.groupName = 'ADMIN';
+```
+所有的实体类注解都是可继承的，因此，如果你出于性能考虑，不希望Post实体在所有查询中都进行JOIN，你可以使用实体类继承的方案进行折中
+如果你的表连接或者表连接条件是动态的，那么此方法并不适用，请考虑使用手写SQL语句配合<code>SqlContext</code>在Mapper中实现灵活的动态SQL
+```java
+public class Post {
+  private String id;
+
+  private String title;
+
+  private String userId;
+
+  private String createDate;
+
+  // 此处省略getter和setter
+}
+
+public class PostWithUserInfo extends Post {
+  @SqlJoin(User.class)
+  private static final SqlCriterion postUser = SqlCriterion.eq("postUser.id", "userId");
+
+  @SqlJoin(Group.class)
+  private static final SqlCriterion postUserGroup = SqlCriterion.eq("postUserGroup.id", "postUser.groupId");
+
+  @SqlProperty(reference = "postUser.username")
+  private String username;
+
+  @SqlProperty(reference = "postUserGroup.groupName")
+  private String userGroupName;
+
+  // 此处省略getter和setter
+}
+```
+继承的优先级：属性注解 &gt; Getter注解 &gt; Setter注解 &gt; 父类属性注解 &gt; 父类Getter注解 &gt; 父类Setter注解
+实体连接一样会被子类继承下来，如果子类声明了同名的连接，则会覆盖父类的声明
