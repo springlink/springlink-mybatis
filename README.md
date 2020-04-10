@@ -6,7 +6,7 @@
 <dependency>
   <groupId>com.github.springlink</groupId>
   <artifactId>springlink-mybatis</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.2</version>
 </dependency>
 <dependency>
     <groupId>org.mybatis.spring.boot</groupId>
