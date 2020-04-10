@@ -45,12 +45,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.RowBounds;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import com.github.springlink.mybatis.entity.Author;
 import com.github.springlink.mybatis.entity.Author2;
 import com.github.springlink.mybatis.entity.Author3;
 import com.github.springlink.mybatis.entity.Comment;
 import com.github.springlink.mybatis.entity.GeneratedKeysTable;
 import com.github.springlink.mybatis.entity.Post;
+import com.github.springlink.mybatis.entity.PostOfSally;
 import com.github.springlink.mybatis.entity.Tag;
 import com.github.springlink.mybatis.entity.Tag2;
 import com.github.springlink.mybatis.registry.SqlDialect;
@@ -63,17 +75,6 @@ import com.github.springlink.mybatis.sql.SqlUpdate;
 import com.github.springlink.mybatis.util.BoundList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.session.RowBounds;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 public class DefaultSqlDaoTest {
 	private static SqlSessionFactory sqlSessionFactory;
@@ -100,6 +101,7 @@ public class DefaultSqlDaoTest {
 		sqlRegistry.addType(Author2.class);
 		sqlRegistry.addType(Author3.class);
 		sqlRegistry.addType(Post.class);
+		sqlRegistry.addType(PostOfSally.class);
 		sqlRegistry.addType(Tag.class);
 		sqlRegistry.addType(Tag2.class);
 		sqlRegistry.addType(GeneratedKeysTable.class);
@@ -280,8 +282,6 @@ public class DefaultSqlDaoTest {
 			SqlDao dao = new DefaultSqlDao(sqlRegistry, session);
 
 			dao.select(Post.class).where((SqlCriterion) null).orderBy((SqlOrderBy) null);
-
-			dao.select(Post.class).asList((SqlProjections) null);
 
 			dao.update(Post.class, (SqlUpdate) null, null);
 
@@ -670,6 +670,23 @@ public class DefaultSqlDaoTest {
 			// 	SqlUpdate.create().set("subject", SqlReference.of("blogAuthorName")), eq("id", 1))).isEqualTo(1);
 
 			// assertThat(dao.select(Post.class).where(eq("blogAuthorName", SqlReference.of("subject"))).asList()).hasSize(1);
+		}
+	}
+	
+	@Test
+	public void shouldSelectWithJoinConditions() {
+		try (SqlSession session = sqlSessionFactory.openSession()) {
+			SqlDao dao = new DefaultSqlDao(sqlRegistry, session);
+
+			assertThat(dao.select(PostOfSally.class).where(eq("id", 2)).asOne())
+				.satisfies(it -> {
+					assertThat(it.get().getAuthorNamedSally()).isNull();
+				});
+
+			assertThat(dao.select(PostOfSally.class).where(eq("id", 3)).asOne())
+				.satisfies(it -> {
+					assertThat(it.get().getAuthorNamedSally()).isNotNull();
+				});
 		}
 	}
 }

@@ -541,6 +541,7 @@ public class H2Dialect extends SqlDialect {
 
 	protected String getJoinedTableSql(SqlContext ctx) {
 		StringBuilder sqlBuilder = new StringBuilder(join(" ", getTableSql(ctx, null), ctx.getTableAlias()));
+		int joinIndex = 0;
 		for (SqlJoinMetadata join : ctx.getEntity().getJoins()) {
 			switch (join.getJoinType()) {
 			case FULL_OUTER:
@@ -557,9 +558,16 @@ public class H2Dialect extends SqlDialect {
 				break;
 			}
 			String criterionName = "joinCriterion_" + join.getName();
-			ctx.putObject(criterionName, join.getCriterion());
-			sqlBuilder.append(String.format("%s %s ON %s",
-					getTableSql(ctx, join.getName()), ctx.getTableAlias(join.getName()), ctx.sql(criterionName)));
+			sqlBuilder.append(String.format("%s %s ON ${%s.putObject('%s', %s.entity.joins.get(%d).criterion).sql('%s')}",
+					getTableSql(ctx, join.getName()),
+					ctx.getTableAlias(join.getName()),
+					ctx.getRootPath(),
+					criterionName,
+					ctx.getRootPath(),
+					joinIndex,
+					criterionName,
+					ctx.sql(criterionName)));
+			joinIndex++;
 		}
 		return sqlBuilder.toString();
 	}
