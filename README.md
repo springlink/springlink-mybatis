@@ -8,6 +8,11 @@
   <artifactId>springlink-mybatis</artifactId>
   <version>1.0.0</version>
 </dependency>
+<dependency>
+    <groupId>org.mybatis.spring.boot</groupId>
+    <artifactId>mybatis-spring-boot-starter</artifactId>
+    <version>2.1.2</version>
+</dependency>
 ```
 
 ## Spring JavaConfig 配置
