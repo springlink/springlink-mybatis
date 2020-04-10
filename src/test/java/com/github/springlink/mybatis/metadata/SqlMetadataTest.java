@@ -16,6 +16,8 @@
 
 package com.github.springlink.mybatis.metadata;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 
 import com.github.springlink.mybatis.metadata.example.EntityWithCycleJoins;
@@ -26,6 +28,8 @@ import com.github.springlink.mybatis.metadata.example.EntityWithIllegalCacheAnno
 import com.github.springlink.mybatis.metadata.example.EntityWithIncompatibleJoinField;
 import com.github.springlink.mybatis.metadata.example.EntityWithNonFinalJoinField;
 import com.github.springlink.mybatis.metadata.example.EntityWithNonStaticJoinField;
+import com.github.springlink.mybatis.metadata.example.EntityWithSequentialJoins;
+import com.github.springlink.mybatis.metadata.example.EntityWithSequentialJoinsReversed;
 import com.github.springlink.mybatis.metadata.example.EntityWithUnresolvableJoins;
 
 public class SqlMetadataTest {
@@ -72,5 +76,20 @@ public class SqlMetadataTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testDuplicatedPropertyAliases() {
 		SqlMetadata.resolveEntity(EntityWithDuplicatedPropertyAliases.class);
+	}
+
+	@Test
+	public void testSequentialJoins() {
+		SqlEntityMetadata em = SqlMetadata.resolveEntity(EntityWithSequentialJoins.class);
+		SqlJoinMetadata jm1 = em.getJoins().get(0);
+		SqlJoinMetadata jm2 = em.getJoins().get(1);
+		assertThat(jm1.getName()).isEqualTo("join1");
+		assertThat(jm2.getName()).isEqualTo("join2");
+		
+		em = SqlMetadata.resolveEntity(EntityWithSequentialJoinsReversed.class);
+		jm1 = em.getJoins().get(0);
+		jm2 = em.getJoins().get(1);
+		assertThat(jm1.getName()).isEqualTo("join2");
+		assertThat(jm2.getName()).isEqualTo("join1");
 	}
 }

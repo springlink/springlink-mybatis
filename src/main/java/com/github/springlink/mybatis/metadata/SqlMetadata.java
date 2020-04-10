@@ -208,6 +208,6 @@ public final class SqlMetadata {
 				throw new IllegalArgumentException("Cycle join reference found: " + entityType.getName());
 			}
 		}
-		return sortedJoins;
+		return Lists.reverse(sortedJoins);
 	}
 }

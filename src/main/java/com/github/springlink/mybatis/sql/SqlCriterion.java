@@ -232,7 +232,7 @@ public abstract class SqlCriterion {
 				}
 			}
 			return Collections.unmodifiableSet(refs.stream()
-					.map(SqlReference::getName).filter(Objects::nonNull).collect(Collectors.toSet()));
+					.map(SqlReference::toString).filter(Objects::nonNull).collect(Collectors.toSet()));
 		}
 
 		@Override
