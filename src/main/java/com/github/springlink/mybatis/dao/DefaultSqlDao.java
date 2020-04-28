@@ -194,7 +194,10 @@ public class DefaultSqlDao implements SqlDao {
 	}
 
 	protected Object extractResult(Map<String, Object> result, SqlProjections projections) {
-		return projections.asMap().size() == 1 ? result.values().iterator().next() : result;
+		if (projections.asMap().size() == 1) {
+			return result != null ? result.values().iterator().next() : null;
+		}
+		return result;
 	}
 
 	protected List<Object> extractResultList(List<Map<String, Object>> resultList, SqlProjections projections) {
