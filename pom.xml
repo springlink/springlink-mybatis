@@ -39,7 +39,7 @@
     <guava.version>27.1-jre</guava.version>
     
     <logback.version>1.2.3</logback.version>
-    <junit.version>4.12</junit.version>
+    <junit.version>4.13.1</junit.version>
     <assertj.version>3.9.1</assertj.version>
     <mockito.version>2.16.0</mockito.version>
     <h2.version>1.4.197</h2.version>
